@@ -1,5 +1,5 @@
 import twint
-
+import facebook_scraper
 
 def tweet_scr(name, key, since, out):
     """
@@ -25,7 +25,14 @@ def reddit_scr():
     pass
 
 
-def facebook_scr():
+def facebook_scr(group_id, credential):
+    '''
+
+    :param group_id: str
+    :param credential:
+    :return:
+    '''
+    data = facebook_scraper.get_posts(group=group_id,credentials=credential)
     pass
 
 
