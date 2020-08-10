@@ -26,9 +26,9 @@ def tweet_scr(name, key, since, out):
 
 def reddit_scr(keyword):
     '''
-    
+
     :param keyword: search work
-    :return: 
+    :return: a list of objects, we can get the text of the posts by call the object's attribute selftext
     '''
     api = psaw.PushshiftAPI()
     start_time = int(dt.datetime(2020, 3, 1).timestamp())
