@@ -28,7 +28,7 @@ def reddit_scr(keyword):
     '''
 
     :param keyword: search work
-    :return: a list of objects, we can get the text of the posts by call the object's attribute selftext
+    :return: a list of objects, we can get the text of the posts by call the object's attribute selftext and title
     '''
     api = psaw.PushshiftAPI()
     start_time = int(dt.datetime(2020, 3, 1).timestamp())
