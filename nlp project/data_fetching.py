@@ -1,5 +1,5 @@
 import twint
-import facebook_scraper
+# import facebook_scraper
 import psaw
 import datetime as dt
 
@@ -44,17 +44,15 @@ def facebook_scr(group_id, credential):
     :param credential:tuple of user and password to login before requesting the posts
     :return: generator object
     '''
-    data = facebook_scraper.get_posts(group=group_id, credentials=credential)
-    return data
+#     data = facebook_scraper.get_posts(group=group_id, credentials=credential)
+#     return data
+    pass
 
 
 def forum_scr():
     pass
 
-data = facebook_scr('1626765324278687', None)
-for i in data:
-    print(i['text'])
-    break
+
 # output = []
 # result = reddit_scr('Internet Outage')
 # for i in result:
