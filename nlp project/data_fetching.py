@@ -28,27 +28,36 @@ def reddit_scr(keyword):
     '''
 
     :param keyword: search work
-    :return: a list of objects, we can get the text of the posts by call the object's attribute selftext and title
+    :return: a list of objects, we can get the text of the posts by call the object's attribute selftext
     '''
     api = psaw.PushshiftAPI()
     start_time = int(dt.datetime(2020, 3, 1).timestamp())
-    output = list(api.search_submissions(after=start_time, q=keyword, limit=20))
-
+    # output = list(api.search_submissions(after=start_time, q=keyword, limit=20))
+    output = api.search_comments(after=start_time, q=keyword, limit=1)
     return output
 
 
 def facebook_scr(group_id, credential):
     '''
 
-    :param group_id: str
-    :param credential:
-    :return:
+    :param group_id: first click into the group and the id is the last part of its url
+    :param credential:tuple of user and password to login before requesting the posts
+    :return: generator object
     '''
     data = facebook_scraper.get_posts(group=group_id, credentials=credential)
-    pass
+    return data
 
 
 def forum_scr():
     pass
 
+data = facebook_scr('1626765324278687', None)
+for i in data:
+    print(i['text'])
+    break
+# output = []
+# result = reddit_scr('Internet Outage')
+# for i in result:
+#     output.append(i)
+# print(output)
 
