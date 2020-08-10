@@ -1,5 +1,8 @@
 import twint
 import facebook_scraper
+import psaw
+import datetime as dt
+
 
 def tweet_scr(name, key, since, out):
     """
@@ -21,8 +24,17 @@ def tweet_scr(name, key, since, out):
     return 'Your data is in' + ' ' + out
 
 
-def reddit_scr():
-    pass
+def reddit_scr(keyword):
+    '''
+    
+    :param keyword: search work
+    :return: 
+    '''
+    api = psaw.PushshiftAPI()
+    start_time = int(dt.datetime(2020, 3, 1).timestamp())
+    output = list(api.search_submissions(after=start_time, q=keyword, limit=20))
+
+    return output
 
 
 def facebook_scr(group_id, credential):
@@ -32,9 +44,11 @@ def facebook_scr(group_id, credential):
     :param credential:
     :return:
     '''
-    data = facebook_scraper.get_posts(group=group_id,credentials=credential)
+    data = facebook_scraper.get_posts(group=group_id, credentials=credential)
     pass
 
 
 def forum_scr():
     pass
+
+
