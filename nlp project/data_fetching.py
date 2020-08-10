@@ -1,7 +1,8 @@
 import twint
-# import facebook_scraper
+import facebook_scraper
 import psaw
 import datetime as dt
+import csv
 
 
 def tweet_scr(name, key, since, out):
@@ -28,13 +29,28 @@ def reddit_scr(keyword):
     '''
 
     :param keyword: search work
-    :return: a list of objects, we can get the text of the posts by call the object's attribute selftext
+    :return: 
     '''
     api = psaw.PushshiftAPI()
     start_time = int(dt.datetime(2020, 3, 1).timestamp())
-    # output = list(api.search_submissions(after=start_time, q=keyword, limit=20))
-    output = api.search_comments(after=start_time, q=keyword, limit=1)
-    return output
+    output_raw = list(api.search_submissions(after=start_time, q=keyword, limit=20))
+    # output = api.search_comments(after=start_time, q=keyword, limit=1)
+    output = []
+    curr = []
+    for obj in output_raw:
+        curr.append(obj.created_utc)
+        curr.append(obj.subreddit)
+        curr.append(obj.title)
+        curr.append(obj.selftext)
+        print(curr)
+        output.append(curr)
+        curr = []
+
+    file = open('reddit_data.csv', 'a+', newline='')
+    with file:
+        write = csv.writer(file)
+        write.writerows(output)
+    return 'Done'
 
 
 def facebook_scr(group_id, credential):
@@ -44,18 +60,20 @@ def facebook_scr(group_id, credential):
     :param credential:tuple of user and password to login before requesting the posts
     :return: generator object
     '''
-#     data = facebook_scraper.get_posts(group=group_id, credentials=credential)
-#     return data
-    pass
+    data = facebook_scraper.get_posts(group=group_id, credentials=credential)
+    return data
 
 
 def forum_scr():
     pass
 
 
+# data = facebook_scr('434568226894938', ('121472974@qq.com', 'Peter0316'))
+# for i in data:
+#     print(i)
+#     break
 # output = []
-# result = reddit_scr('Internet Outage')
+result = reddit_scr('Internet Outage')
 # for i in result:
 #     output.append(i)
 # print(output)
-
