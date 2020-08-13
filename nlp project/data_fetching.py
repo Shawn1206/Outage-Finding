@@ -3,7 +3,10 @@ import facebook_scraper
 import psaw
 import datetime as dt
 import csv
-
+from bs4 import BeautifulSoup
+from bs4.element import Comment
+import urllib.request
+import sys
 
 def tweet_scr(name, key, since, out):
     """
@@ -29,7 +32,7 @@ def reddit_scr(keyword):
     '''
 
     :param keyword: search work
-    :return: 
+    :return:
     '''
     api = psaw.PushshiftAPI()
     start_time = int(dt.datetime(2020, 3, 1).timestamp())
@@ -64,8 +67,39 @@ def facebook_scr(group_id, credential):
     return data
 
 
-def forum_scr():
-    pass
+def forum_scr(url):
+    request = urllib.request.Request(url)
+    response = urllib.request.urlopen(request, timeout=20)
+    html = response.read()
+
+    def tagVisible(element):
+        '''
+        
+        Input: an element which is a child of the whole html document object -> str
+        Output: if it contain plain text that we want -> boolean
+        '''
+        unwantedElements = ['style', 'script', 'head', 'title', 'meta', '[document]']
+        if element.parent.name in unwantedElements:
+            return False
+        if isinstance(element, Comment):
+            return False
+        return True
+    def textFromHtml(body):
+        '''
+        
+        Input: a html document that may contain js scripts, css styles and other stuff -> str
+        Output: a clean text (<20000 characters) that only contains plain text
+        '''
+        soup = BeautifulSoup(body, 'html.parser')
+        texts = soup.findAll(text=True)
+        visible_texts = filter(tagVisible, texts)
+        cleanText = u" ".join(t.strip() for t in visible_texts)
+        # if len(cleanText) > 20000:
+        #     return cleanText[:20000]
+        return cleanText
+
+    text = textFromHtml(html)
+    return text
 
 
 # data = facebook_scr('434568226894938', ('121472974@qq.com', 'Peter0316'))
@@ -73,7 +107,8 @@ def forum_scr():
 #     print(i)
 #     break
 # output = []
-result = reddit_scr('Internet Outage')
+# result = reddit_scr('Internet Outage')
 # for i in result:
 #     output.append(i)
 # print(output)
+print(forum_scr('https://en.wikipedia.org/wiki/Pig'))
