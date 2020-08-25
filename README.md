@@ -15,7 +15,7 @@ All the code in this project is for Columbia University's SNL's COVID-19 project
             -3. You can refer to the function reddit_sp in nlp project/info_extraction.py to know how to use the data
 4. Forum: data/forum_data0.1.txt
 
-            -1. Current scraping tool can only scrape the preview part of the posts(the first 80 words, no replies included) shown on the searching web-page, as                     well as timestamp and username
+            -1. Current scraping tool can only scrape the preview part of the posts(the first 80 words, no replies included) shown on the searching web-page, as     well as timestamp and username
             -2. Current data is all the posts from Jan/2020 to August/2020 searched by keyword 'outage' in the Comcast Xfinity's official customer forum
             -3. You can refer to the function forum_sp in nlp project/info_extraction.py to know how to use the data
             
