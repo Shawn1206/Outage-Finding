@@ -8,6 +8,8 @@ from bs4.element import Comment
 import urllib.request
 import sys
 import time
+import selenium
+import twitter
 
 
 def tweet_scr(name, key, since, out):
@@ -20,17 +22,27 @@ def tweet_scr(name, key, since, out):
     :return: str
     """
     c = twint.Config()
-    c.Username = name
+    c.Search = "from:" + name
+    c.User_full = True
     c.Lang = 'en'
-    c.Search = key
+    c.Profile_full = True
+    # c.Search = key
     c.Since = since
-    c.Output = out + name + '.txt'
+    c.Output = out + name + '_' + key + ' ' + since + '.txt'
 
     twint.run.Search(c)
     return 'Your data is in' + ' ' + out
 
 
-# tweet_scr('comcastcares', 'outage','2020-03-01 00:00:00','/Users/xiaoan/Desktop/network/nlp project/')
+# tweet_scr('comcastcares', 'outage Xfinity', '2020-08-22 00:00:00', '/Users/xiaoan/Desktop/network/nlp project/')
+
+def twitter_profile():
+    api = twitter.Api(consumer_key='', consumer_secret='', access_token_key='', application_only_auth='')
+    stat = api.GetUserTimeline('319385375')
+    print([s.text for s in stat])
+
+
+# twitter_profile()
 
 
 def reddit_scr(keyword):
@@ -40,8 +52,8 @@ def reddit_scr(keyword):
     :return:
     '''
     api = psaw.PushshiftAPI()
-    start_time = int(dt.datetime(2020, 3, 1).timestamp())
-    output_raw = list(api.search_submissions(after=start_time, q=keyword, limit=100000))
+    start_time = int(dt.datetime(2020, 1, 1).timestamp())
+    output_raw = list(api.search_submissions(after=start_time, q=keyword, limit=100000000))
     # output = api.search_comments(after=start_time, q=keyword, limit=1)
     output = []
     curr = []
@@ -57,14 +69,14 @@ def reddit_scr(keyword):
             output.append(curr)
             curr = []
 
-    file = open('reddit_data.csv', 'a+', newline='')
+    file = open('reddit_data4.csv', 'a+', newline='')
     with file:
         write = csv.writer(file)
         write.writerows(output)
     return 'Done'
 
 
-# result = reddit_scr('Internet Outage')
+result = reddit_scr('outage')
 
 def facebook_scr(group_id, credential):
     '''
@@ -76,6 +88,15 @@ def facebook_scr(group_id, credential):
     data = facebook_scraper.get_posts(group=group_id, credentials=credential)
     return data
 
+
+# data = facebook_scr('434568226894938', ('121472974@qq.com', 'Peter0316'))
+# for i in data:
+#     print(i)
+#     break
+# output = []
+# for i in result:
+#     output.append(i)
+# print(output)
 
 def forum_scr(url):
     request = urllib.request.Request(url)
@@ -110,19 +131,11 @@ def forum_scr(url):
     text = textFromHtml(html)
     file = open('forum_data.txt', 'a')
     file.write(text)
+    # file.write('\n')
     return text
-num = 1
-while num < 10:
-    num = str(num)
-    forum_scr('https://forums.xfinity.com/t5/forums/searchpage/tab/message?q=outage&advanced=true&page='+ num +'&sort_by=-topicPostDate&collapse_discussion=true&search_type=thread&search_page_size=50')
-    num = int(num)
-    num += 1
-
-# data = facebook_scr('434568226894938', ('121472974@qq.com', 'Peter0316'))
-# for i in data:
-#     print(i)
-#     break
-# output = []
-# for i in result:
-#     output.append(i)
-# print(output)
+# num = 1
+# while num < 3:
+#     num = str(num)
+#     forum_scr('https://forums.xfinity.com/t5/forums/searchpage/tab/message?q=outage&advanced=true&page='+ num +'&sort_by=-topicPostDate&collapse_discussion=true&search_type=thread&search_page_size=10')
+#     num = int(num)
+#     num += 1
