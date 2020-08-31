@@ -9,10 +9,9 @@ import urllib.request
 import sys
 import time
 import selenium
-import twitter
 
 
-def tweet_scr(name, key, since, out):
+def tweet_scr(name, key, since,until, out):
     """
 
     :param name: str "ATTHelp"
@@ -22,28 +21,22 @@ def tweet_scr(name, key, since, out):
     :return: str
     """
     c = twint.Config()
-    c.Search = "from:" + name
-    c.User_full = True
+    # c.Search = "from:" + name
+    # c.User_full = True
     c.Lang = 'en'
     c.Profile_full = True
-    # c.Search = key
+    c.Search = key
     c.Since = since
+    c.Until = until
     c.Output = out + name + '_' + key + ' ' + since + '.txt'
 
     twint.run.Search(c)
     return 'Your data is in' + ' ' + out
 
 
-# tweet_scr('comcastcares', 'outage Xfinity', '2020-08-22 00:00:00', '/Users/xiaoan/Desktop/network/nlp project/')
-
-def twitter_profile():
-    api = twitter.Api(consumer_key='', consumer_secret='', access_token_key='', application_only_auth='')
-    stat = api.GetUserTimeline('319385375')
-    print([s.text for s in stat])
-
-
-# twitter_profile()
-
+tweet_scr('Verizon', 'outage Verizon', '2019-01-01 00:00:00','2019-12-18 13:10:15', '/Users/xiaoan/Desktop/network/nlp project/data/')
+# tweet_scr('CenturyLink', 'outage CenturyLink', '2019-01-01 00:00:00','2020-08-30 23:59:59', '/Users/xiaoan/Desktop/network/nlp project/data/')
+tweet_scr('Cox', 'outage Cox', '2019-01-01 00:00:00','2019-11-01 03:55:04', '/Users/xiaoan/Desktop/network/nlp project/data/')
 
 def reddit_scr(keyword):
     '''
@@ -76,7 +69,8 @@ def reddit_scr(keyword):
     return 'Done'
 
 
-result = reddit_scr('outage')
+# result = reddit_scr('outage')
+
 
 def facebook_scr(group_id, credential):
     '''
@@ -133,6 +127,7 @@ def forum_scr(url):
     file.write(text)
     # file.write('\n')
     return text
+
 # num = 1
 # while num < 3:
 #     num = str(num)
