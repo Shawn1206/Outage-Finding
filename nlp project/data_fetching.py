@@ -11,7 +11,7 @@ import time
 import selenium
 
 
-def tweet_scr(name, key, since,until, out):
+def tweet_scr(name, key, since, until, out):
     """
 
     :param name: str "ATTHelp"
@@ -34,9 +34,12 @@ def tweet_scr(name, key, since,until, out):
     return 'Your data is in' + ' ' + out
 
 
-tweet_scr('Verizon', 'outage Verizon', '2019-01-01 00:00:00','2019-12-18 13:10:15', '/Users/xiaoan/Desktop/network/nlp project/data/')
+tweet_scr('Comcast', 'outage Xfinity', '2019-08-01 00:00:00', '2019-08-31 23:59:59',
+          '/Users/xiaoan/Desktop/network/nlp project/data/')
+
+
 # tweet_scr('CenturyLink', 'outage CenturyLink', '2019-01-01 00:00:00','2020-08-30 23:59:59', '/Users/xiaoan/Desktop/network/nlp project/data/')
-tweet_scr('Cox', 'outage Cox', '2019-01-01 00:00:00','2019-11-01 03:55:04', '/Users/xiaoan/Desktop/network/nlp project/data/')
+# tweet_scr('Cox', 'outage Cox', '2019-01-01 00:00:00','2019-11-01 03:55:04', '/Users/xiaoan/Desktop/network/nlp project/data/')
 
 def reddit_scr(keyword):
     '''
