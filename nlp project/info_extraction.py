@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import credentials
 import twitter
 
+
 def token_ex(clean_text):
     nlp = en_core_web_sm.load()
     doc = nlp(clean_text)
@@ -17,6 +18,8 @@ def token_ex(clean_text):
             output.append((X.text, X.label_))
     return output
 
+
+# print(token_ex('#Florida'))
 
 def twitter_sp(name):
     def twitter_profile(user):
@@ -154,41 +157,11 @@ def location_filter(dict0):
 def name_to_number(name):
     pass
 
+gc = geonamescache.GeonamesCache()
+raw = gc.get_cities()
+raw2 = raw.copy()
+for i in raw:
+    if raw[i]['countrycode'] != 'US':
+        raw2.pop(i)
 
-def distribution_viewer(name, type):
-    time_flow = defaultdict(int)
-    if type == 'r':
-        with open(name, newline='') as csvfile:
-            reader = csv.reader(csvfile, delimiter=',')
-            for row in reader:
-                # time = row[0][:11]
-                time = row[0][:7]
-                time_flow[time] += 1
-    else:
-        tmp = open(name, 'r')
-        text = tmp.read()
-        if type == 't':
-            text = text.split('\n')[:-1]
-            for tweet in text:
-                # time = tweet[20:32]
-                time = tweet[20:27]
-                time_flow[time] += 1
-        elif type == 'f':
-            pages = text.split('Best Match')
-            for page in pages:
-                posts = page.split(' ' * 33)
-                for post in posts:
-                    date = re.search(r"[0-1][0-9]-[0-2][0-9]-20[0-9][0-9]", post)
-                    if date:
-                        tmp2 = date.group()[:2]
-                        time_flow[tmp2] += 1
-    output = time_flow
-    plt.plot(list(reversed(output.keys())), list(reversed(output.values())))
-    plt.xlabel('Month')
-    plt.ylabel('Number of tweets')
-    plt.show()
-
-# output = distribution_viewer('Twitter_outage_Xfinity.txt','t')
-# output = distribution_viewer('forum_data0.1.txt','f')
-# output = distribution_viewer('reddit_data.csv','r')
-
+print(len(raw2))
