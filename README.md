@@ -2,6 +2,7 @@
 All the resources in this project is for Columbia University's SNL's COVID-19 project.
 
 ## Details about data
+0.For Tom: https://drive.google.com/drive/folders/1xOTiSA9K4ibOdupFkll1iKi8BujHslZS?usp=sharing
 1. Facebook: data from Facebook is not included now. Because the quality(the ratio of posts contain locational words, around 9%) and the quantity(20 raw posts in August, while twitter got 1,200 and Reddit/Forum got 60) of the posts in private groups is rather low. This situation might be different if we consider adding the information from user profiles and scrape data from users instead of groups.
 2. Twitter: data/Twitter_outage_Xfinity.txt
 
