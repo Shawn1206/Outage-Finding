@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from haversine import haversine
 from sklearn.cluster import DBSCAN
-
 from credentials import google_key
+from geonamescache import GeonamesCache
 
 
 # lyon = (45.7597, 4.8422)
@@ -193,8 +193,8 @@ def time_location_clustering(isp_name, time_slot, time_gap, distance):
         data_formal = {}
         for i in data:
             time = datetime.datetime.strptime(i[:19], "%Y-%m-%d %H:%M:%S")
-            # for data[i]
-            pass
+            data_formal[time] = [j[0] for j in data[i][0]]
+        return data_formal
 
     def data_slice(data, start, end):
         output = {}
@@ -203,6 +203,90 @@ def time_location_clustering(isp_name, time_slot, time_gap, distance):
                 output[i] = data[i]
             else:
                 continue
+        return output
+
+    def geo_match2(location_names):
+        output = {}
+        gc = GeonamesCache()
+        state_dic_abbr = gc.get_us_states()
+        capital_dic = {
+            'Alabama': 'Montgomery',
+            'Alaska': 'Juneau',
+            'Arizona': 'Phoenix',
+            'Arkansas': 'Little Rock',
+            'California': 'Sacramento',
+            'Colorado': 'Denver',
+            'Connecticut': 'Hartford',
+            'Delaware': 'Dover',
+            'Florida': 'Tallahassee',
+            'Georgia': 'Atlanta',
+            'Hawaii': 'Honolulu',
+            'Idaho': 'Boise',
+            'Illinios': 'Springfield',
+            'Indiana': 'Indianapolis',
+            'Iowa': 'Des Monies',
+            'Kansas': 'Topeka',
+            'Kentucky': 'Frankfort',
+            'Louisiana': 'Baton Rouge',
+            'Maine': 'Augusta',
+            'Maryland': 'Annapolis',
+            'Massachusetts': 'Boston',
+            'Michigan': 'Lansing',
+            'Minnesota': 'St. Paul',
+            'Mississippi': 'Jackson',
+            'Missouri': 'Jefferson City',
+            'Montana': 'Helena',
+            'Nebraska': 'Lincoln',
+            'Neveda': 'Carson City',
+            'New Hampshire': 'Concord',
+            'New Jersey': 'Trenton',
+            'New Mexico': 'Santa Fe',
+            'New York': 'Albany',
+            'North Carolina': 'Raleigh',
+            'North Dakota': 'Bismarck',
+            'Ohio': 'Columbus',
+            'Oklahoma': 'Oklahoma City',
+            'Oregon': 'Salem',
+            'Pennsylvania': 'Harrisburg',
+            'Rhoda Island': 'Providence',
+            'South Carolina': 'Columbia',
+            'South Dakoda': 'Pierre',
+            'Tennessee': 'Nashville',
+            'Texas': 'Austin',
+            'Utah': 'Salt Lake City',
+            'Vermont': 'Montpelier',
+            'Virginia': 'Richmond',
+            'Washington': 'Olympia',
+            'West Virginia': 'Charleston',
+            'Wisconsin': 'Madison',
+            'Wyoming': 'Cheyenne',
+            'District of Columbia': 'DC'
+        }
+        new_data = {'DC': [38.895, -77.0366667]}
+        with open("city_loca.json", 'r') as f2:
+            for line in f2:
+                datum = json.loads(line)
+                if datum['CityNameAccented'] not in new_data:
+                    new_data[datum['CityNameAccented']] = [datum['Latitude'], datum['Longitude']]
+        for i in location_names:
+            for name in location_names[i]:
+                if name in new_data:
+                    output[i] = new_data[name]
+                    break
+                else:
+                    continue
+            if i not in new_data:
+                full_state_name = ''
+                for name in location_names[i]:
+                    if name in state_dic_abbr:
+                        full_state_name = state_dic_abbr[name]['name']
+                    else:
+                        if name in capital_dic:
+                            full_state_name = name
+                    if full_state_name:
+                        output[i] = new_data[capital_dic[full_state_name]]
+                        break
+
         return output
 
     def clutering_time(data, time_gap):
@@ -218,19 +302,24 @@ def time_location_clustering(isp_name, time_slot, time_gap, distance):
         time_slot[1], "%Y-%m-%d")
     f = open(isp_name)
     data = json.load(f)
-    data_formal = data_preprocess(data)
+    data_pre = data_preprocess(data)
+    data_formal = geo_match2(data_pre)
     data_slice1 = data_slice(data_formal, s, e)
-    fig = plt.figure(figsize=(10, 8))
-    ax = fig.add_subplot(111, projection=ccrs.PlateCarree())
-    ax.coastlines()
-    ax.set_extent([-130, -60, 20, 55])
+    tmp = data_slice1.values()
+    y, x = [i[0] for i in tmp], [i[1] for i in tmp]
+    print(len(y))
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    ax.coastlines(resolution='110m')
+    ax.set_extent([-130, -60, 17, 50], ccrs.PlateCarree())
     ax.add_feature(cfeature.BORDERS.with_scale('50m'), linestyle=':')
     ax.add_feature(cfeature.STATES.with_scale('50m'), linestyle=':')
-    tmp = data_slice1.values()
-    x, y = [i[0] for i in tmp], [i[1] for i in tmp]
-    ax.plot(x, y)
+    plt.scatter(x, y, marker='o', color='red')
+    plt.title(isp_name + ' from ' + time_slot[0] + ' to ' + time_slot[1])
+    plt.savefig('test')
     plt.show()
+
 
 # ISP_lst = [('AT&T_outage AT&T.txt', 't'), ('Spectrum_outage Spectrum.txt', 't'), ('Cox.txt', 't'),
 #        ('Comcast_outage Xfinity.txt', 't'), ('Verizon_outage Verizon.txt', 't')]
 # time_series(ISP_lst, ('2019-01-01', '2020-08-30'), 'month')
+time_location_clustering('Cox_outage.json', ('2020-08-01', '2020-08-15'), 1, 1)
