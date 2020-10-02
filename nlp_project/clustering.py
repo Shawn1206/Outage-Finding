@@ -6,7 +6,7 @@ import re
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 from collections import defaultdict
-
+import random
 import googlemaps
 import matplotlib.pyplot as plt
 import numpy as np
@@ -222,7 +222,7 @@ def time_location_clustering(isp_name, time_slot, time_gap, distance):
             'Georgia': 'Atlanta',
             'Hawaii': 'Honolulu',
             'Idaho': 'Boise',
-            'Illinios': 'Springfield',
+            'Illinois': 'Springfield',
             'Indiana': 'Indianapolis',
             'Iowa': 'Des Monies',
             'Kansas': 'Topeka',
@@ -262,7 +262,7 @@ def time_location_clustering(isp_name, time_slot, time_gap, distance):
             'Wyoming': 'Cheyenne',
             'District of Columbia': 'DC'
         }
-        new_data = {'DC': [38.895, -77.0366667]}
+        new_data = {'DC': [38.895, -77.0366667], 'St. Paul': [44.9537, -93.0900]}
         with open("city_loca.json", 'r') as f2:
             for line in f2:
                 datum = json.loads(line)
@@ -284,7 +284,8 @@ def time_location_clustering(isp_name, time_slot, time_gap, distance):
                         if name in capital_dic:
                             full_state_name = name
                     if full_state_name:
-                        output[i] = new_data[capital_dic[full_state_name]]
+                        tmp0 = capital_dic[full_state_name]
+                        output[i] = new_data[tmp0]
                         break
 
         return output
@@ -306,14 +307,14 @@ def time_location_clustering(isp_name, time_slot, time_gap, distance):
     data_formal = geo_match2(data_pre)
     data_slice1 = data_slice(data_formal, s, e)
     tmp = data_slice1.values()
-    y, x = [i[0] for i in tmp], [i[1] for i in tmp]
+    y, x = [i[0] + 0.1 * random.random() for i in tmp], [i[1] + 0.1 * random.random() for i in tmp]
     print(len(y))
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines(resolution='110m')
     ax.set_extent([-130, -60, 17, 50], ccrs.PlateCarree())
     ax.add_feature(cfeature.BORDERS.with_scale('50m'), linestyle=':')
     ax.add_feature(cfeature.STATES.with_scale('50m'), linestyle=':')
-    plt.scatter(x, y, marker='o', color='red')
+    plt.scatter(x, y, marker='x', color='red')
     plt.title(isp_name + ' from ' + time_slot[0] + ' to ' + time_slot[1])
     plt.savefig('test')
     plt.show()
@@ -322,4 +323,4 @@ def time_location_clustering(isp_name, time_slot, time_gap, distance):
 # ISP_lst = [('AT&T_outage AT&T.txt', 't'), ('Spectrum_outage Spectrum.txt', 't'), ('Cox.txt', 't'),
 #        ('Comcast_outage Xfinity.txt', 't'), ('Verizon_outage Verizon.txt', 't')]
 # time_series(ISP_lst, ('2019-01-01', '2020-08-30'), 'month')
-time_location_clustering('Cox_outage.json', ('2020-08-01', '2020-08-15'), 1, 1)
+time_location_clustering('loca_Comcast.json', ('2020-03-01', '2020-04-01'), 1, 1)
