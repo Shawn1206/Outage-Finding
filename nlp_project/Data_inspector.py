@@ -52,17 +52,7 @@ with open('log_for_' + file_name, 'a') as file:
 
         if feedback2.lower() == 'y':
             weird.append(i)
-    file.write("The number of total tweets contains locations by human: " + str(len(total_num)) + '\n')
-    file.write("The number of total tweets contains locations by machine: " + str(len(reco_num)) + '\n')
-    file.write("The number of total tweets contains locations not tagged by machine: " + str(len(unreco)) + '\n')
-    file.write(
-        "The number of total tweets contains locations mistakenly tagged by machine: " + str(len(misreco)) + '\n')
-    file.write("The number of weird tweets in the sample: " + len(str(weird)) + '\n')
-    file.write("The list of total tweets contains locations by human: " + str(total_num) + '\n')
-    file.write("The list of total tweets contains locations by machine: " + str(reco_num) + '\n')
-    file.write("The list of total tweets contains locations not tagged by machine: " + str(unreco) + '\n')
-    file.write("The list of total tweets contains locations mistakenly tagged by machine: " + str(misreco) + '\n')
-    file.write("The list of weird tweets in the sample: " + str(weird) + '\n')
+    
     a = set(total_num)
     b = set(reco_num)
     c = set(unreco)
@@ -73,13 +63,26 @@ with open('log_for_' + file_name, 'a') as file:
     c -= e
     d -= e
     count = 0
+    f = []
     for i in c:
-        output = token_ex(text[i])
+        output = token_ex()
         if output:
-            print(output)
             count += 1
-    print(count)
+            f.append(i)
     recall = (len(a) - len(c) + count) / len(a)
     precision = (len(b) - len(d) + count) / (len(b) + count)
+    b += set(f)
+    c -= set(f)
+    file.write("The number of total tweets contains locations by human: " + str(len(total_num)) + '\n')
+    file.write("The number of total tweets contains locations by machine: " + str(len(b)) + '\n')
+    file.write("The number of total tweets contains locations not tagged by machine: " + str(len(c)) + '\n')
+    file.write(
+        "The number of total tweets contains locations mistakenly tagged by machine: " + str(len(misreco)) + '\n')
+    file.write("The number of weird tweets in the sample: " + str(len(weird)) + '\n')
+    file.write("The list of total tweets contains locations by human: " + str(total_num) + '\n')
+    file.write("The list of total tweets contains locations by machine: " + str(b) + '\n')
+    file.write("The list of total tweets contains locations not tagged by machine: " + str(c) + '\n')
+    file.write("The list of total tweets contains locations mistakenly tagged by machine: " + str(misreco) + '\n')
+    file.write("The list of weird tweets in the sample: " + str(weird) + '\n')
     file.write("Precision is: "+str(precision))
     file.write("Recall is "+str(recall))
