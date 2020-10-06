@@ -1,7 +1,14 @@
 import random
 import sys
 import en_core_web_sm
-
+def token_ex(clean_text):
+    nlp = en_core_web_sm.load()
+    doc = nlp(clean_text)
+    output = []
+    for X in doc.ents:
+        if X.label_ == 'GPE':
+            output.append((X.text, X.label_))
+    return output
 file_name = sys.argv[1]
 tmp = open(file_name, 'r')
 text = tmp.read()
@@ -65,7 +72,14 @@ with open('log_for_' + file_name, 'a') as file:
     b -= e
     c -= e
     d -= e
-    recall = (len(a) - len(c))/len(a)
-    precision = (len(b) - len(d))/len(b)
+    count = 0
+    for i in c:
+        output = token_ex(text[i])
+        if output:
+            print(output)
+            count += 1
+    print(count)
+    recall = (len(a) - len(c) + count) / len(a)
+    precision = (len(b) - len(d) + count) / (len(b) + count)
     file.write("Precision is: "+str(precision))
     file.write("Recall is "+str(recall))
