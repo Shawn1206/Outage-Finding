@@ -9,7 +9,9 @@ from collections import defaultdict
 import random
 import googlemaps
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdate
 import numpy as np
+import pandas as pd
 from haversine import haversine
 from sklearn.cluster import DBSCAN
 from credentials import google_key
@@ -163,164 +165,200 @@ def time_series(name_type, time_slot, gran):
         else:
             return time
 
-    color = 'bgrcmyk'
+    color = 'bygrm'
     n = 0
+    tmp = [0] * 61
+    tmp2 = []
     for dataset in name_type:
         out = counter(dataset)
         x, y = list(reversed(out.keys())), list(reversed(out.values()))
-        plt.plot(x, y, color=color[n], label=dataset[0])
-        pickle.dump([x, y], open(dataset[0][:-4] + ' ' + time_slot[0] + ' for_tom.pkl', 'wb'))
+        tmp2 = x
+        for i in range(61):
+            tmp[i] += y[i]
+        plt.plot(x, y, color=color[n], label=dataset[0].split('.')[0])
+        # pickle.dump([x, y], open(dataset[0][:-4] + ' ' + time_slot[0] + ' for_tom.pkl', 'wb'))
         n += 1
     plt.title('Twitter Complaints about Outage 2019-2020')
+    plt.plot(tmp2, tmp, color='k', label='total')
     plt.xlabel('Time Flow')
-    plt.xticks(rotation=90)
+    plt.xticks(np.arange(0, 61, 7), rotation=0, fontsize=13)
     plt.ylabel('Number of tweets')
     plt.legend()
-    plt.savefig(name_type[0][0][:-4] + ' ' + time_slot[0] + '.pdf', bbox_inches='tight')
+    plt.savefig('test')
+    # plt.savefig(name_type[0][0][:-4] + ' ' + time_slot[0] + '.pdf', bbox_inches='tight')
+    plt.show()
 
 
-def time_location_clustering(isp_name, time_slot, time_gap, distance):
-    '''
-    This function returns clustered groups
-    :param isp_name:
-    :param time_slot:
-    :param time_gap:
-    :param distance:
-    :return:
-    '''
+# ISP_lst = [('Verizon.txt', 't'), ('Spectrum.txt', 't'), ('Cox.txt', 't'), ('AT&T.txt', 't'), ('Comcast.txt', 't')]
+# time_series(ISP_lst, ('2020-03-01', '2020-04-30'), 'day')
 
-    def data_preprocess(data):
-        data_formal = {}
-        for i in data:
-            time = datetime.datetime.strptime(i[:19], "%Y-%m-%d %H:%M:%S")
-            data_formal[time] = [j[0] for j in data[i][0]]
-        return data_formal
 
-    def data_slice(data, start, end):
-        output = {}
-        for i in data:
-            if start <= i <= end:
-                output[i] = data[i]
-            else:
-                continue
-        return output
+def clustering(ISP_lst):
+    def time_location_clustering(isp_name, time_slot, time_gap, distance):
+        '''
+        This function returns clustered groups
+        :param isp_name:
+        :param time_slot:
+        :param time_gap:
+        :param distance:
+        :return:
+        '''
 
-    def geo_match2(location_names):
-        output = {}
-        gc = GeonamesCache()
-        state_dic_abbr = gc.get_us_states()
-        capital_dic = {
-            'Alabama': 'Montgomery',
-            'Alaska': 'Juneau',
-            'Arizona': 'Phoenix',
-            'Arkansas': 'Little Rock',
-            'California': 'Sacramento',
-            'Colorado': 'Denver',
-            'Connecticut': 'Hartford',
-            'Delaware': 'Dover',
-            'Florida': 'Tallahassee',
-            'Georgia': 'Atlanta',
-            'Hawaii': 'Honolulu',
-            'Idaho': 'Boise',
-            'Illinois': 'Springfield',
-            'Indiana': 'Indianapolis',
-            'Iowa': 'Des Monies',
-            'Kansas': 'Topeka',
-            'Kentucky': 'Frankfort',
-            'Louisiana': 'Baton Rouge',
-            'Maine': 'Augusta',
-            'Maryland': 'Annapolis',
-            'Massachusetts': 'Boston',
-            'Michigan': 'Lansing',
-            'Minnesota': 'St. Paul',
-            'Mississippi': 'Jackson',
-            'Missouri': 'Jefferson City',
-            'Montana': 'Helena',
-            'Nebraska': 'Lincoln',
-            'Neveda': 'Carson City',
-            'New Hampshire': 'Concord',
-            'New Jersey': 'Trenton',
-            'New Mexico': 'Santa Fe',
-            'New York': 'Albany',
-            'North Carolina': 'Raleigh',
-            'North Dakota': 'Bismarck',
-            'Ohio': 'Columbus',
-            'Oklahoma': 'Oklahoma City',
-            'Oregon': 'Salem',
-            'Pennsylvania': 'Harrisburg',
-            'Rhoda Island': 'Providence',
-            'South Carolina': 'Columbia',
-            'South Dakoda': 'Pierre',
-            'Tennessee': 'Nashville',
-            'Texas': 'Austin',
-            'Utah': 'Salt Lake City',
-            'Vermont': 'Montpelier',
-            'Virginia': 'Richmond',
-            'Washington': 'Olympia',
-            'West Virginia': 'Charleston',
-            'Wisconsin': 'Madison',
-            'Wyoming': 'Cheyenne',
-            'District of Columbia': 'DC'
-        }
-        new_data = {'DC': [38.895, -77.0366667], 'St. Paul': [44.9537, -93.0900]}
-        with open("city_loca.json", 'r') as f2:
-            for line in f2:
-                datum = json.loads(line)
-                if datum['CityNameAccented'] not in new_data:
-                    new_data[datum['CityNameAccented']] = [datum['Latitude'], datum['Longitude']]
-        for i in location_names:
-            for name in location_names[i]:
-                if name in new_data:
-                    output[i] = new_data[name]
-                    break
+        def data_preprocess(data):
+            data_formal = {}
+            for i in data:
+                time = datetime.datetime.strptime(i[:19], "%Y-%m-%d %H:%M:%S")
+                data_formal[time] = [j[0] for j in data[i][0]]
+            return data_formal
+
+        def data_slice(data, start, end):
+            output = {}
+            for i in data:
+                if start <= i <= end:
+                    output[i] = data[i]
                 else:
                     continue
-            if i not in new_data:
-                full_state_name = ''
+            return output
+
+        def geo_match2(location_names):
+            output = {}
+            gc = GeonamesCache()
+            state_dic_abbr = gc.get_us_states()
+            capital_dic = {
+                'Alabama': 'Montgomery',
+                'Alaska': 'Juneau',
+                'Arizona': 'Phoenix',
+                'Arkansas': 'Little Rock',
+                'California': 'Sacramento',
+                'Colorado': 'Denver',
+                'Connecticut': 'Hartford',
+                'Delaware': 'Dover',
+                'Florida': 'Tallahassee',
+                'Georgia': 'Atlanta',
+                'Hawaii': 'Honolulu',
+                'Idaho': 'Boise',
+                'Illinois': 'Springfield',
+                'Indiana': 'Indianapolis',
+                'Iowa': 'Des Monies',
+                'Kansas': 'Topeka',
+                'Kentucky': 'Frankfort',
+                'Louisiana': 'Baton Rouge',
+                'Maine': 'Augusta',
+                'Maryland': 'Annapolis',
+                'Massachusetts': 'Boston',
+                'Michigan': 'Lansing',
+                'Minnesota': 'St. Paul',
+                'Mississippi': 'Jackson',
+                'Missouri': 'Jefferson City',
+                'Montana': 'Helena',
+                'Nebraska': 'Lincoln',
+                'Neveda': 'Carson City',
+                'New Hampshire': 'Concord',
+                'New Jersey': 'Trenton',
+                'New Mexico': 'Santa Fe',
+                'New York': 'Albany',
+                'North Carolina': 'Raleigh',
+                'North Dakota': 'Bismarck',
+                'Ohio': 'Columbus',
+                'Oklahoma': 'Oklahoma City',
+                'Oregon': 'Salem',
+                'Pennsylvania': 'Harrisburg',
+                'Rhoda Island': 'Providence',
+                'South Carolina': 'Columbia',
+                'South Dakoda': 'Pierre',
+                'Tennessee': 'Nashville',
+                'Texas': 'Austin',
+                'Utah': 'Salt Lake City',
+                'Vermont': 'Montpelier',
+                'Virginia': 'Richmond',
+                'Washington': 'Olympia',
+                'West Virginia': 'Charleston',
+                'Wisconsin': 'Madison',
+                'Wyoming': 'Cheyenne',
+                'District of Columbia': 'DC'
+            }
+            new_data = {'DC': [38.895, -77.0366667], 'St. Paul': [44.9537, -93.0900]}
+            with open("city_loca.json", 'r') as f2:
+                for line in f2:
+                    datum = json.loads(line)
+                    if datum['CityNameAccented'] not in new_data:
+                        new_data[datum['CityNameAccented']] = [datum['Latitude'], datum['Longitude']]
+            for i in location_names:
                 for name in location_names[i]:
-                    if name in state_dic_abbr:
-                        full_state_name = state_dic_abbr[name]['name']
-                    else:
-                        if name in capital_dic:
-                            full_state_name = name
-                    if full_state_name:
-                        tmp0 = capital_dic[full_state_name]
-                        output[i] = new_data[tmp0]
+                    if name in new_data:
+                        output[i] = new_data[name]
                         break
+                    else:
+                        continue
+                if i not in new_data:
+                    full_state_name = ''
+                    for name in location_names[i]:
+                        if name in state_dic_abbr:
+                            full_state_name = state_dic_abbr[name]['name']
+                        else:
+                            if name in capital_dic:
+                                full_state_name = name
+                        if full_state_name:
+                            tmp0 = capital_dic[full_state_name]
+                            try:
+                                output[i] = new_data[tmp0]
+                                break
+                            except:
+                                continue
 
-        return output
+            return output
 
-    def clutering_time(data, time_gap):
-        X = np.array(data)
-        clustering = DBSCAN(eps=time_gap * 3600, min_samples=1).fit(X)
-        labels = clustering.labels_
-        pass
+        def clutering_time(data, time_gap):
+            X = np.array(data)
+            clustering = DBSCAN(eps=time_gap * 3600, min_samples=1).fit(X)
+            labels = clustering.labels_
+            pass
 
-    def clustering_geo(data, distance):
-        pass
+        def clustering_geo(data, distance):
+            pass
 
-    s, e = datetime.datetime.strptime(time_slot[0], "%Y-%m-%d"), datetime.datetime.strptime(
-        time_slot[1], "%Y-%m-%d")
-    f = open(isp_name)
-    data = json.load(f)
-    data_pre = data_preprocess(data)
-    data_formal = geo_match2(data_pre)
-    data_slice1 = data_slice(data_formal, s, e)
-    tmp = data_slice1.values()
-    y, x = [i[0] + 0.1 * random.random() for i in tmp], [i[1] + 0.1 * random.random() for i in tmp]
-    print(len(y))
+        s, e = datetime.datetime.strptime(time_slot[0], "%Y-%m-%d"), datetime.datetime.strptime(
+            time_slot[1], "%Y-%m-%d")
+        f = open(isp_name)
+        data = json.load(f)
+        # print(len(data))
+        data_pre = data_preprocess(data)
+        data_formal = geo_match2(data_pre)
+        data_slice1 = data_slice(data_formal, s, e)
+        tmp = data_slice1.values()
+        y, x = [i[0] + 0.2 * random.random() for i in tmp], [i[1] + 0.2 * random.random() for i in tmp]
+        return x, y
+
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines(resolution='110m')
     ax.set_extent([-130, -60, 17, 50], ccrs.PlateCarree())
     ax.add_feature(cfeature.BORDERS.with_scale('50m'), linestyle=':')
     ax.add_feature(cfeature.STATES.with_scale('50m'), linestyle=':')
-    plt.scatter(x, y, marker='x', color='red')
-    plt.title(isp_name + ' from ' + time_slot[0] + ' to ' + time_slot[1])
-    plt.savefig('test')
+    color = 'bygrm'
+    for i, j in enumerate(ISP_lst):
+        x, y = time_location_clustering(j[0], j[1], j[2], j[3])
+        plt.scatter(x, y, marker='x', c=color[i], label=j[0].split('.')[0].split('_')[1])
+    # plt.title(isp_name + ' from ' + time_slot[0] + ' to ' + time_slot[1])
+    plt.title('Outage Reports on ISPs' + ' on' + ' April ' + ISP_lst[0][1][0].split('-')[-1] + ' th')
+    plt.legend()
+    plt.savefig(ISP_lst[0][1][1])
     plt.show()
 
 
-# ISP_lst = [('AT&T_outage AT&T.txt', 't'), ('Spectrum_outage Spectrum.txt', 't'), ('Cox.txt', 't'),
-#        ('Comcast_outage Xfinity.txt', 't'), ('Verizon_outage Verizon.txt', 't')]
-# time_series(ISP_lst, ('2019-01-01', '2020-08-30'), 'month')
-time_location_clustering('loca_Comcast.json', ('2020-03-01', '2020-04-01'), 1, 1)
+# pattern = '2020-03-'
+#
+# for i in range(2, 32):
+#     time = (pattern + str(i - 1), pattern + str(i))
+#     ISP_lst = [('loca_Verizon.json', time, 1, 1),
+#                ('loca_Spectrum.json', time, 1, 1),
+#                ('loca_Comcast.json', time, 1, 1),
+#                ('loca_AT&T.json', time, 1, 1),
+#                ('loca_Cox.json', time, 1, 1)]
+#     clustering(ISP_lst)
+#
+# time = ('2020-03-31', '2020-04-01')
+# clustering([('loca_Verizon.json', time, 1, 1),
+#             ('loca_Spectrum.json', time, 1, 1),
+#             ('loca_Comcast.json', time, 1, 1),
+#             ('loca_AT&T.json', time, 1, 1),
+#             ('loca_Cox.json', time, 1, 1)])
