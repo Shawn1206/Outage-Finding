@@ -16,6 +16,7 @@ from haversine import haversine
 from sklearn.cluster import DBSCAN
 from credentials import google_key
 from geonamescache import GeonamesCache
+from constant import capital_dic
 
 
 # lyon = (45.7597, 4.8422)
@@ -209,6 +210,7 @@ def clustering(ISP_lst):
             for i in data:
                 time = datetime.datetime.strptime(i[:19], "%Y-%m-%d %H:%M:%S")
                 data_formal[time] = [j[0] for j in data[i][0]]
+            # print(data_formal)
             return data_formal
 
         def data_slice(data, start, end):
@@ -218,6 +220,7 @@ def clustering(ISP_lst):
                     output[i] = data[i]
                 else:
                     continue
+            # print(output)
             return output
 
         def geo_match2(location_names):
@@ -252,7 +255,7 @@ def clustering(ISP_lst):
                                 break
                             except:
                                 continue
-
+            # print(output)
             return output
 
         def clutering_time(data, time_gap):
@@ -262,19 +265,44 @@ def clustering(ISP_lst):
             pass
 
         def clustering_geo(data, distance):
-            pass
+            def center_g(member_list):
+                x = sum([i[0] for i in member_list]) / len(member_list)
+                y = sum([j[1] for j in member_list]) / len(member_list)
+                c = (x, y)
+                return c
+
+            groups = []
+            while data:
+                curr = data.pop()
+                if not groups:
+                    groups.append([curr])
+                else:
+                    dist = []
+                    for group in groups:
+                        dist.append(haversine(curr, center_g(group)))
+                    dist = np.array(dist)
+                    if min(dist) <= distance:
+                        groups[np.ndarray.argmin(dist)].append(curr)
+                    else:
+                        groups.append([curr])
+            representatives = {}
+            for group in groups:
+                representatives[center_g(group)] = len(group)
+            return representatives
 
         s, e = datetime.datetime.strptime(time_slot[0], "%Y-%m-%d"), datetime.datetime.strptime(
             time_slot[1], "%Y-%m-%d")
         f = open(isp_name)
         data = json.load(f)
-        # print(len(data))
         data_pre = data_preprocess(data)
         data_formal = geo_match2(data_pre)
         data_slice1 = data_slice(data_formal, s, e)
         tmp = data_slice1.values()
-        y, x = [i[0] + 0.2 * random.random() for i in tmp], [i[1] + 0.2 * random.random() for i in tmp]
-        return x, y
+        groups = clustering_geo(list(tmp), distance)
+        y, x = [i[0] + 0.2 * random.random() for i in groups.keys()], [i[1] + 0.2 * random.random() for i in
+                                                                       groups.keys()]
+        z = list(groups.values())
+        return x, y, z
 
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines(resolution='110m')
@@ -283,29 +311,47 @@ def clustering(ISP_lst):
     ax.add_feature(cfeature.STATES.with_scale('50m'), linestyle=':')
     color = 'bygrm'
     for i, j in enumerate(ISP_lst):
-        x, y = time_location_clustering(j[0], j[1], j[2], j[3])
-        plt.scatter(x, y, marker='x', c=color[i], label=j[0].split('.')[0].split('_')[1])
+        x, y, z = time_location_clustering(j[0], j[1], j[2], j[3])
+        # print(len(x))
+        for k in range(len(x)):
+            plt.scatter([x[k]], [y[k]], s=z[k] * 30, marker='x', c=color[i])
+            # plt.scatter([x[k]], [y[k]], s=z[k]*20, marker='x', c=color[i], label=j[0].split('.')[0].split('_')[1])
     # plt.title(isp_name + ' from ' + time_slot[0] + ' to ' + time_slot[1])
-    plt.title('Outage Reports on ISPs' + ' on' + ' April ' + ISP_lst[0][1][0].split('-')[-1] + ' th')
-    plt.legend()
+    plt.title('Outage Reports for ISPs' + ' on' + ' April ' + ISP_lst[0][1][0].split('-')[-1] + 'th')
+    # plt.legend(loc=3)
     plt.savefig(ISP_lst[0][1][1])
     plt.show()
-
 
 # pattern = '2020-03-'
 #
 # for i in range(2, 32):
 #     time = (pattern + str(i - 1), pattern + str(i))
-#     ISP_lst = [('loca_Verizon.json', time, 1, 1),
-#                ('loca_Spectrum.json', time, 1, 1),
-#                ('loca_Comcast.json', time, 1, 1),
-#                ('loca_AT&T.json', time, 1, 1),
-#                ('loca_Cox.json', time, 1, 1)]
+#     ISP_lst = [('loca_Verizon.json', time, 1, 500),
+#                ('loca_Spectrum.json', time, 1, 500),
+#                ('loca_Comcast.json', time, 1, 500),
+#                ('loca_AT&T.json', time, 1, 500),
+#                ('loca_Cox.json', time, 1, 500)]
 #     clustering(ISP_lst)
 #
 # time = ('2020-03-31', '2020-04-01')
-# clustering([('loca_Verizon.json', time, 1, 1),
-#             ('loca_Spectrum.json', time, 1, 1),
-#             ('loca_Comcast.json', time, 1, 1),
-#             ('loca_AT&T.json', time, 1, 1),
-#             ('loca_Cox.json', time, 1, 1)])
+# clustering([('loca_Verizon.json', time, 1, 500),
+#                ('loca_Spectrum.json', time, 1, 500),
+#                ('loca_Comcast.json', time, 1, 500),
+#                ('loca_AT&T.json', time, 1, 500),
+#                ('loca_Cox.json', time, 1, 500)])
+
+pattern = '2020-04-'
+for i in range(2, 31):
+    time = (pattern + str(i - 1), pattern + str(i))
+    ISP_lst = [('loca_Verizon.json', time, 1, 500),
+               ('loca_Spectrum.json', time, 1, 500),
+               ('loca_Comcast.json', time, 1, 500),
+               ('loca_AT&T.json', time, 1, 500),
+               ('loca_Cox.json', time, 1, 500)]
+    clustering(ISP_lst)
+time = ('2020-04-30', '2020-05-01')
+clustering([('loca_Verizon.json', time, 1, 500),
+               ('loca_Spectrum.json', time, 1, 500),
+               ('loca_Comcast.json', time, 1, 500),
+               ('loca_AT&T.json', time, 1, 500),
+               ('loca_Cox.json', time, 1, 500)])
