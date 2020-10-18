@@ -16,51 +16,39 @@ import credentials
 def tweet_scr(key, since, until, out):
     """
 
+    :param until:
     :param key: str "Internet outage"
     :param since: str '2020-07-20 00:00:00'
     :param out: str
     :return: str
     """
-    # c = twint.Config()
-    # # c.Search = "from:" + name
-    # # c.User_full = True
-    # c.Lang = 'en'
-    # c.Profile_full = True
-    # c.Search = key
-    # c.Since = since
-    # c.Until = until
-    # c.Output = out + key + ' ' + since + '.txt'
-
+    c = twint.Config()
+    # c.Search = "from:" + name
+    # c.User_full = True
+    c.Lang = 'en'
+    c.Profile_full = True
+    c.Search = key
+    c.Since = since
+    c.Until = until
+    c.Output = out + key + ' ' + since + '.txt'
+    twint.run.Search(c)
 
     return 'Your data is in' + ' ' + out
 
-c = twint.Config()
-c.Since = '2019-01-01 00:00:00'
-c.Until = '2019-04-02 00:00:00'
-c.Search = "service down Xfinity"
-c.Store_object = True
-c.Limit = 1000
-twint.run.Search(c)
-tlist = c.search_tweet_list
-a = set()
-b = set()
-for t in tlist:
-    a.add(t['data-item-id'])
-print(a)
-print(len(a))
-print(tlist)
-# a = ['no', 'knocked', 'down', 'out']
-# b = ['internet', 'service', 'network']
-# isp = ['Comcast', 'Xfinity', 'Verizon', 'Fios', 'Spectrum', 'TWC', 'Cox', 'AT&T', 'DIRECTV']
-# for i in a:
-#     for j in b:
-#         for k in isp:
-#             key = i + ' ' + j + ' ' + k
-#             tweet_scr(key, '2019-01-01 00:00:00', '2020-08-31 23:59:59',
-#                       '/Users/xiaoan/Desktop/network/nlp_project/data/')
 
 
-# tweet_scr('CenturyLink', 'outage CenturyLink', '2019-01-01 00:00:00','2020-08-30 23:59:59', '/Users/xiaoan/Desktop/network/nlp_project/data/')
+a = ['no', 'knocked', 'down', 'out']
+b = ['internet', 'service', 'network']
+isp = ['Comcast', 'Xfinity', 'Verizon', 'Fios', 'Spectrum', 'TWC', 'Cox', 'AT&T', 'DIRECTV']
+for i in a:
+    for j in b:
+        for k in isp:
+            key = i + ' ' + j + ' ' + k
+            tweet_scr(key, '2019-01-01 00:00:00', '2020-08-31 23:59:59',
+                      '/Users/xiaoan/Desktop/network/nlp_project/data/')
+
+
+# tweet_scr('outage CenturyLink', '2019-01-01 00:00:00','2020-08-30 23:59:59', '/Users/xiaoan/Desktop/network/nlp_project/data/')
 # tweet_scr('Cox', 'outage Cox', '2019-01-01 00:00:00','2019-11-01 03:55:04', '/Users/xiaoan/Desktop/network/nlp_project/data/')
 
 def reddit_scr(keyword):
