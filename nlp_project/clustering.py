@@ -195,6 +195,8 @@ def time_series(name_type, time_slot, gran):
 
 
 def clustering(ISP_lst):
+    global uni
+
     def time_location_clustering(isp_name, time_slot, time_gap, distance):
         '''
         This function returns clustered groups
@@ -312,16 +314,27 @@ def clustering(ISP_lst):
     color = 'bygrm'
     for i, j in enumerate(ISP_lst):
         x, y, z = time_location_clustering(j[0], j[1], j[2], j[3])
+        # uni += set(z)
         # print(len(x))
-        for k in range(len(x)):
-            plt.scatter([x[k]], [y[k]], s=z[k] * 30, marker='x', c=color[i])
-            # plt.scatter([x[k]], [y[k]], s=z[k]*20, marker='x', c=color[i], label=j[0].split('.')[0].split('_')[1])
+        x = y = [30]
+        z = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 25, 28, 29]
+        z = [29]
+        for i in range(len(z)):
+            plt.scatter(x, y, marker='o', c='k', s=z[i] * 30, label=str(z[i])+' tweets')
+        break
+        # for k in range(len(x)):
+        #     if z[k] >= 3:
+        #         plt.scatter([x[k]], [y[k]], s=z[k] * 30, marker='o', c=color[i],label=str(z[k])+' tweets')
+
     # plt.title(isp_name + ' from ' + time_slot[0] + ' to ' + time_slot[1])
-    plt.title('Outage Reports for ISPs' + ' on' + ' April ' + ISP_lst[0][1][0].split('-')[-1] + 'th')
-    # plt.legend(loc=3)
-    plt.savefig(ISP_lst[0][1][1])
+    plt.title('Outage Reports for ISPs' + ' on' + ' March ' + ISP_lst[0][1][0].split('-')[-1] + 'th')
+    plt.legend(loc=3)
+    # plt.savefig(ISP_lst[0][1][1])
     plt.show()
 
+
+# uni = []
+# set(uni)
 # pattern = '2020-03-'
 #
 # for i in range(2, 32):
@@ -333,25 +346,25 @@ def clustering(ISP_lst):
 #                ('loca_Cox.json', time, 1, 500)]
 #     clustering(ISP_lst)
 #
-# time = ('2020-03-31', '2020-04-01')
-# clustering([('loca_Verizon.json', time, 1, 500),
-#                ('loca_Spectrum.json', time, 1, 500),
-#                ('loca_Comcast.json', time, 1, 500),
-#                ('loca_AT&T.json', time, 1, 500),
-#                ('loca_Cox.json', time, 1, 500)])
-
-pattern = '2020-04-'
-for i in range(2, 31):
-    time = (pattern + str(i - 1), pattern + str(i))
-    ISP_lst = [('loca_Verizon.json', time, 1, 500),
-               ('loca_Spectrum.json', time, 1, 500),
-               ('loca_Comcast.json', time, 1, 500),
-               ('loca_AT&T.json', time, 1, 500),
-               ('loca_Cox.json', time, 1, 500)]
-    clustering(ISP_lst)
-time = ('2020-04-30', '2020-05-01')
+time = ('2020-03-31', '2020-04-01')
 clustering([('loca_Verizon.json', time, 1, 500),
                ('loca_Spectrum.json', time, 1, 500),
                ('loca_Comcast.json', time, 1, 500),
                ('loca_AT&T.json', time, 1, 500),
                ('loca_Cox.json', time, 1, 500)])
+#
+# pattern = '2020-04-'
+# for i in range(2, 31):
+#     time = (pattern + str(i - 1), pattern + str(i))
+#     ISP_lst = [('loca_Verizon.json', time, 1, 500),
+#                ('loca_Spectrum.json', time, 1, 500),
+#                ('loca_Comcast.json', time, 1, 500),
+#                ('loca_AT&T.json', time, 1, 500),
+#                ('loca_Cox.json', time, 1, 500)]
+#     clustering(ISP_lst)
+# time = ('2020-04-30', '2020-05-01')
+# clustering([('loca_Verizon.json', time, 1, 500),
+#             ('loca_Spectrum.json', time, 1, 500),
+#             ('loca_Comcast.json', time, 1, 500),
+#             ('loca_AT&T.json', time, 1, 500),
+#             ('loca_Cox.json', time, 1, 500)])
