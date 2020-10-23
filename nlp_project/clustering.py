@@ -1,22 +1,22 @@
 import csv
 import datetime
 import json
-import pickle
+import random
 import re
+from collections import defaultdict
+
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
-from collections import defaultdict
-import random
 import googlemaps
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdate
 import numpy as np
 import pandas as pd
+from geonamescache import GeonamesCache
 from haversine import haversine
 from sklearn.cluster import DBSCAN
+
+from constant import state_dict, state_list, capital_dic
 from credentials import google_key
-from geonamescache import GeonamesCache
-from constant import capital_dic
 
 
 # lyon = (45.7597, 4.8422)
@@ -42,23 +42,76 @@ def geo_match(data):
     :return: dict of coordinates
     """
     output = []
-    new_data = {}
-    with open("city_loca.json", 'r') as f:
-        for line in f:
-            datum = json.loads(line)
-            if 'Population' in datum:
-                new_data[datum['CityNameAccented']] = [datum['Latitude'], datum['Longitude']]
-    for i in data.values():
-        # print(i)
-        for event in i:
-            # print(event)
-            if event[0] in new_data:
-                # print(event[0])
-                coord = new_data[event[0]]  # can be improved
+    tmp_output = {}
+    # new_data = {}
+    # with open("city_loca.json", 'r') as f:
+    #     for line in f:
+    #         datum = json.loads(line)
+    #         if 'Population' in datum:
+    #             new_data[datum['CityNameAccented']] = [datum['Latitude'], datum['Longitude']]
+    new_data = pd.read_json("city_loca.json", lines=True)
+    for item in data.items():
+        i = item[1]
+        timestamp = item[0]
+        states = []
+        rest_i = []
+        for word in i:
+            # print(word)
+            if word[0] in state_list:
+                if len(word[0]) == 2:
+                    states.append(word[0])
+                else:
+                    states.append(state_dict[word[0]])
+            else:
+                rest_i.append(word[0])
+        while rest_i:
+            curr = rest_i.pop(0)
+            if "'" in curr[0]:
+                continue
+            res = new_data.query("CityNameAccented=='" + curr[0] + "'")
+            if len(res) > 0 and len(res) == 1:
+                coord = [float(res['Latitude']), float(res['Longitude'])]
                 output.append(coord)
-                break
+            elif len(res) > 0 and len(res) > 1:
+                if states:
+                    for j in states:
+                        new_res = res.query("Region=='" + j + "'")
+                        if len(new_res) == 1:
+                            coord = [float(res['Latitude']), float(res['Longitude'])]
+                            output.append(coord)
+                            tmp_output[timestamp] = coord
+                        else:
+                            tmp = res[0:1]  # deal with ambiguous situation
+                            coord = [float(tmp['Latitude']), float(tmp['Longitude'])]
+                            output.append(coord)
+                            tmp_output[timestamp] = coord
+                else:
+                    tmp = res[0:1]
+                    coord = [float(tmp['Latitude']), float(tmp['Longitude'])]
+                    output.append(coord)
+                    tmp_output[timestamp] = coord
+
+    # for i in data.values():
+    #     # print(i)
+    #     for event in i:
+    #         # print(event)
+    #         if event[0] in new_data:
+    #             # print(event[0])
+    #             # coord = new_data[event[0]]  # can be improved
+    #
+    #             res = new_data.query("CityNameAccented=='"+event[0]+"'")
+    #             if res:
+    #                 coord = [float(res['Latitude']), float(res['Longitude'])]
+    #                 output.append(coord)
+    #             break
+
+    # return tmp_output, output
     return output
 
+f = open('loca_Spectrum.json')
+data = json.load(f)
+with open("Spectrum_geo.json",'w') as outfile:
+    json.dump(geo_match(data)[0], outfile)
 
 def clustering_distance(distance, data, min_p):
     """
@@ -316,22 +369,21 @@ def clustering(ISP_lst):
         x, y, z = time_location_clustering(j[0], j[1], j[2], j[3])
         # uni += set(z)
         # print(len(x))
-        x = y = [30]
-        z = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 25, 28, 29]
-        z = [29]
-        for i in range(len(z)):
-            plt.scatter(x, y, marker='o', c='k', s=z[i] * 30, label=str(z[i])+' tweets')
-        break
-        # for k in range(len(x)):
-        #     if z[k] >= 3:
-        #         plt.scatter([x[k]], [y[k]], s=z[k] * 30, marker='o', c=color[i],label=str(z[k])+' tweets')
+        # x = y = [30]
+        # z = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 25, 28, 29]
+        # z = [29]
+        # for i in range(len(z)):
+        #     plt.scatter(x, y, marker='o', c='k', s=z[i] * 30, label=str(z[i]) + ' tweets')
+        # break
+        for k in range(len(x)):
+            if z[k] >= 3:
+                plt.scatter([x[k]], [y[k]], s=z[k] * 30, marker='o', c=color[i], label=str(z[k]) + ' tweets')
 
     # plt.title(isp_name + ' from ' + time_slot[0] + ' to ' + time_slot[1])
     plt.title('Outage Reports for ISPs' + ' on' + ' March ' + ISP_lst[0][1][0].split('-')[-1] + 'th')
     plt.legend(loc=3)
     # plt.savefig(ISP_lst[0][1][1])
     plt.show()
-
 
 # uni = []
 # set(uni)
@@ -346,12 +398,12 @@ def clustering(ISP_lst):
 #                ('loca_Cox.json', time, 1, 500)]
 #     clustering(ISP_lst)
 #
-time = ('2020-03-31', '2020-04-01')
-clustering([('loca_Verizon.json', time, 1, 500),
-               ('loca_Spectrum.json', time, 1, 500),
-               ('loca_Comcast.json', time, 1, 500),
-               ('loca_AT&T.json', time, 1, 500),
-               ('loca_Cox.json', time, 1, 500)])
+# time = ('2020-03-31', '2020-04-01')
+# clustering([('loca_Verizon.json', time, 1, 500),
+#             ('loca_Spectrum.json', time, 1, 500),
+#             ('loca_Comcast.json', time, 1, 500),
+#             ('loca_AT&T.json', time, 1, 500),
+#             ('loca_Cox.json', time, 1, 500)])
 #
 # pattern = '2020-04-'
 # for i in range(2, 31):
