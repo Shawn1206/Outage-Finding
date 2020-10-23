@@ -81,12 +81,21 @@ def geo_match(data):
                             output.append(coord)
                             tmp_output[timestamp] = coord
                         else:
-                            tmp = res[0:1]  # deal with ambiguous situation
+                            tmp0 = res.loc[:, 'Population']
+                            max_row = tmp0[tmp0 == tmp0.max()].index
+                            tmp = res.loc[max_row]  # deal with ambiguous situation
+                            if len(tmp)==0:
+                                tmp = res[0:1]
                             coord = [float(tmp['Latitude']), float(tmp['Longitude'])]
                             output.append(coord)
                             tmp_output[timestamp] = coord
+                            break
                 else:
-                    tmp = res[0:1]
+                    tmp0 = res.loc[:, 'Population']
+                    max_row = tmp0[tmp0 == tmp0.max()].index
+                    tmp = res.loc[max_row]  # deal with ambiguous situation
+                    if len(tmp) == 0:
+                        tmp = res[0:1]
                     coord = [float(tmp['Latitude']), float(tmp['Longitude'])]
                     output.append(coord)
                     tmp_output[timestamp] = coord
@@ -108,10 +117,11 @@ def geo_match(data):
     # return tmp_output, output
     return output
 
-f = open('loca_Spectrum.json')
+f = open('loca_Cox.json')
 data = json.load(f)
-with open("Spectrum_geo.json",'w') as outfile:
-    json.dump(geo_match(data)[0], outfile)
+print(geo_match(data))
+# with open("Spectrum_geo.json",'w') as outfile:
+#     json.dump(geo_match(data)[0], outfile)
 
 def clustering_distance(distance, data, min_p):
     """
