@@ -1,30 +1,62 @@
 import random
 import sys
 import en_core_web_sm
+from uszipcode import SearchEngine
+num = 200
+
 def token_ex(clean_text):
+    def markercleaner(string):
+        pass
+
+    def casehelper(string):
+        new = string.split(' ')
+        output = ''
+        for i in range(len(new)):
+            if new[i] and new[i] != ' ':
+                new[i] = new[i][0].upper() + new[i][1:]
+            output += new[i]
+            if i != len(new) - 1:
+                output += ' '
+        return output
+
+    tokens = clean_text.split(' ')
+    clean_text = ''
+    for token in tokens:
+        new_token = ''.join(e for e in token if e.isalnum())
+        clean_text += new_token + ' '
     nlp = en_core_web_sm.load()
     doc = nlp(clean_text)
     output = []
     for X in doc.ents:
         if X.label_ == 'GPE':
             output.append((X.text, X.label_))
+    if not output:
+        words = clean_text.split(' ')
+        for word in words:
+            word = ''.join(e for e in word if e.isalnum())
+            if word.isdigit() and len(word) == 5:
+                search = SearchEngine(simple_zipcode=True)
+                zipcode = search.by_zipcode(word)
+                res = zipcode.to_dict()
+                output.append((res['major_city'], 'GPE'))
+
     return output
 file_name = sys.argv[1]
 tmp = open(file_name, 'r')
 text = tmp.read()
 text = text.split('\n')[:-1]
 num = len(text)
-list_sample = random.sample(range(num), 500)
+list_sample = random.sample(range(num), num)
 total_num = []
 reco_num = []
 unreco = []
 misreco = []
 weird = []
-c_num = 500
-with open('log_for_' + file_name, 'a') as file:
+c_num = num
+with open('log_for_' + file_name[-10::], 'a') as file:
     for i in list_sample:
         print('====================================' + '\n' + '====================================')
-        print(str(c_num) + ' / ' + '500')
+        print(str(c_num) + ' / ' + str(num))
         c_num -= 1
         flag = 0
         nlp = en_core_web_sm.load()
@@ -52,7 +84,7 @@ with open('log_for_' + file_name, 'a') as file:
 
         if feedback2.lower() == 'y':
             weird.append(i)
-    
+
     a = set(total_num)
     b = set(reco_num)
     c = set(unreco)
