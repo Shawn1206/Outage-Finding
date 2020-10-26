@@ -2,8 +2,15 @@ import random
 import sys
 import en_core_web_sm
 from uszipcode import SearchEngine
-num = 200
-
+num_t = 200
+# def token_ex(clean_text):
+#     nlp = en_core_web_sm.load()
+#     doc = nlp(clean_text)
+#     output = []
+#     for X in doc.ents:
+#         if X.label_ == 'GPE':
+#             output.append((X.text, X.label_))
+#     return output
 def token_ex(clean_text):
     def markercleaner(string):
         pass
@@ -46,17 +53,17 @@ tmp = open(file_name, 'r')
 text = tmp.read()
 text = text.split('\n')[:-1]
 num = len(text)
-list_sample = random.sample(range(num), num)
+list_sample = random.sample(range(num), num_t)
 total_num = []
 reco_num = []
 unreco = []
 misreco = []
 weird = []
-c_num = num
+c_num = num_t
 with open('log_for_' + file_name[-10::], 'a') as file:
     for i in list_sample:
         print('====================================' + '\n' + '====================================')
-        print(str(c_num) + ' / ' + str(num))
+        print(str(c_num) + ' / ' + str(num_t))
         c_num -= 1
         flag = 0
         nlp = en_core_web_sm.load()
