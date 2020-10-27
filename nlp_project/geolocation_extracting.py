@@ -14,6 +14,7 @@ from uszipcode import SearchEngine
 def token_ex(clean_text):
     def markercleaner(string):
         pass
+
     def casehelper(string):
         new = string.split(' ')
         output = ''
@@ -24,6 +25,7 @@ def token_ex(clean_text):
             if i != len(new) - 1:
                 output += ' '
         return output
+
     tokens = clean_text.split(' ')
     clean_text = ''
     for token in tokens:
@@ -35,20 +37,21 @@ def token_ex(clean_text):
     for X in doc.ents:
         if X.label_ == 'GPE':
             output.append((X.text, X.label_))
-    if not output:
-        words = clean_text.split(' ')
-        for word in words:
-            word = ''.join(e for e in word if e.isalnum())
-            if word.isdigit() and len(word) == 5:
-                search = SearchEngine(simple_zipcode=True)
-                zipcode = search.by_zipcode(word)
-                res = zipcode.to_dict()
-                output.append((res['major_city'], 'GPE'))
+    # if not output:
+    words = clean_text.split(' ')
+    for word in words:
+        word = ''.join(e for e in word if e.isalnum())
+        if word.isdigit() and len(word) == 5:
+            search = SearchEngine(simple_zipcode=True)
+            zipcode = search.by_zipcode(word)
+            res = zipcode.to_dict()
+            output.append((res['major_city'], 'GPE'))
+
 
     return output
 
 
-print(token_ex('1237270689087803392 2020-03-10 02:54:54 EDT <amyl_olsen> @Ask_Spectrum is there an outage in #NY?'))
+# print(token_ex('1237270689087803392 2020-03-10 02:54:54 EDT <amyl_olsen> @Ask_Spectrum is there an outage in #NY?'))
 
 def twitter_sp(name):
     def twitter_profile(user):
@@ -88,7 +91,12 @@ def twitter_sp(name):
         json.dump(output, outfile)
 
 
-# twitter_sp('Comcast.txt')
+twitter_sp('Spectrum.txt')
+
+# twitter_sp('New_data_AT&T.txt')
+# twitter_sp('New_data_Verizon.txt')
+# twitter_sp('New_data_Comcast.txt')
+# twitter_sp('New_data_Cox.txt')
 
 
 def reddit_sp(name):
@@ -135,7 +143,6 @@ def forum_sp(name):
 # def location_filter(dict0):
 #     empty = []
 #
-
 
 
 #
