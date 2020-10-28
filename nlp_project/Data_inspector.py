@@ -104,13 +104,13 @@ with open('log_for_' + file_name[-10::], 'a') as file:
     count = 0
     f = []
     for i in c:
-        output = token_ex()
+        output = token_ex(text[i])
         if output:
             count += 1
             f.append(i)
     recall = (len(a) - len(c) + count) / len(a)
     precision = (len(b) - len(d) + count) / (len(b) + count)
-    b += set(f)
+    b |= set(f)
     c -= set(f)
     file.write("The number of total tweets contains locations by human: " + str(len(total_num)) + '\n')
     file.write("The number of total tweets contains locations by machine: " + str(len(b)) + '\n')
