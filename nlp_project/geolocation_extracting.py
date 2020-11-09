@@ -47,11 +47,10 @@ def token_ex(clean_text):
             res = zipcode.to_dict()
             output.append((res['major_city'], 'GPE'))
 
-
     return output
 
 
-# print(token_ex('1237270689087803392 2020-03-10 02:54:54 EDT <amyl_olsen> @Ask_Spectrum is there an outage in #NY?'))
+# print(token_ex('1237270689087803392 2020-03-10 02:54:54 EDT <amyl_olsen> @Ask_Spectrum is there an outage in 96544?'))
 
 def twitter_sp(name):
     def twitter_profile(user):
@@ -91,13 +90,26 @@ def twitter_sp(name):
         json.dump(output, outfile)
 
 
-twitter_sp('Spectrum.txt')
+# twitter_sp('New_data_Re_AT&T.txt')
 
 # twitter_sp('New_data_AT&T.txt')
 # twitter_sp('New_data_Verizon.txt')
 # twitter_sp('New_data_Comcast.txt')
 # twitter_sp('New_data_Cox.txt')
 
+def disqus(name_list):
+    output = defaultdict(list)
+    for name in name_list:
+        with open(name, newline='') as tsvfile:
+            reader = csv.reader(tsvfile, delimiter='\t')
+            for row in reader:
+                time = row[1]
+                txt = row[-1]
+                output[time].append(txt)
+    with open('loca_Isservicedown.json', 'w') as outfile:
+        json.dump(output, outfile)
+
+# disqus(['./istheservicedown_Data/1577664000.tsv', './istheservicedown_Data/1585194861.tsv','./istheservicedown_Data/1591132970.tsv','./istheservicedown_Data/1596830230.tsv','./istheservicedown_Data/1603532104.tsv'])
 
 def reddit_sp(name):
     output = defaultdict(list)
