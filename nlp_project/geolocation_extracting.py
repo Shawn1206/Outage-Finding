@@ -105,11 +105,11 @@ def disqus(name_list):
             for row in reader:
                 time = row[1]
                 txt = row[-1]
-                output[time].append(txt)
-    with open('loca_Isservicedown.json', 'w') as outfile:
+                output[time].append(token_ex(txt))
+    with open('loca_Isservicedown_real.json', 'w') as outfile:
         json.dump(output, outfile)
 
-# disqus(['./istheservicedown_Data/1577664000.tsv', './istheservicedown_Data/1585194861.tsv','./istheservicedown_Data/1591132970.tsv','./istheservicedown_Data/1596830230.tsv','./istheservicedown_Data/1603532104.tsv'])
+disqus(['./istheservicedown_Data/1577664000.tsv', './istheservicedown_Data/1585194861.tsv','./istheservicedown_Data/1591132970.tsv','./istheservicedown_Data/1596830230.tsv','./istheservicedown_Data/1603532104.tsv'])
 
 def reddit_sp(name):
     output = defaultdict(list)
