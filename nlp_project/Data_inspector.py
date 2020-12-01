@@ -19,7 +19,7 @@ unreco = []
 misreco = []
 weird = []
 c_num = num_t
-with open('log_for_' + file_name[-10::], 'a') as file:
+with open('log_for_' + file_name[-10::-4] + '.txt', 'a') as file:
     for i in list_sample:
         print('====================================' + '\n' + '====================================')
         print(str(c_num) + ' / ' + str(num_t))
