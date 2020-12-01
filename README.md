@@ -1,6 +1,9 @@
 # Outage-Finding
 All the resources in this project is for Columbia University's SNL's COVID-19 project.
 
+## How the program is organised and how to use the functions
+
+
 ## Details about data
 0. Link: https://drive.google.com/drive/folders/1xOTiSA9K4ibOdupFkll1iKi8BujHslZS?usp=sharing
 1. There are two kinds of data file, one is in txt format and the other is in json format.
