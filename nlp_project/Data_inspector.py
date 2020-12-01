@@ -1,57 +1,16 @@
 import random
+import csv
 import sys
 import en_core_web_sm
-from uszipcode import SearchEngine
+from geolocation_extracting import token_ex
 num_t = 200
-# def token_ex(clean_text):
-#     nlp = en_core_web_sm.load()
-#     doc = nlp(clean_text)
-#     output = []
-#     for X in doc.ents:
-#         if X.label_ == 'GPE':
-#             output.append((X.text, X.label_))
-#     return output
-def token_ex(clean_text):
-    def markercleaner(string):
-        pass
-
-    def casehelper(string):
-        new = string.split(' ')
-        output = ''
-        for i in range(len(new)):
-            if new[i] and new[i] != ' ':
-                new[i] = new[i][0].upper() + new[i][1:]
-            output += new[i]
-            if i != len(new) - 1:
-                output += ' '
-        return output
-
-    tokens = clean_text.split(' ')
-    clean_text = ''
-    for token in tokens:
-        new_token = ''.join(e for e in token if e.isalnum())
-        clean_text += new_token + ' '
-    nlp = en_core_web_sm.load()
-    doc = nlp(clean_text)
-    output = []
-    for X in doc.ents:
-        if X.label_ == 'GPE':
-            output.append((X.text, X.label_))
-    if not output:
-        words = clean_text.split(' ')
-        for word in words:
-            word = ''.join(e for e in word if e.isalnum())
-            if word.isdigit() and len(word) == 5:
-                search = SearchEngine(simple_zipcode=True)
-                zipcode = search.by_zipcode(word)
-                res = zipcode.to_dict()
-                output.append((res['major_city'], 'GPE'))
-
-    return output
+text = []
 file_name = sys.argv[1]
-tmp = open(file_name, 'r')
-text = tmp.read()
-text = text.split('\n')[:-1]
+with open(file_name, newline='') as tsvfile:
+    reader = csv.reader(tsvfile, delimiter='\t')
+    for row in reader:
+        text.append(row[-1])
+text = text[1:]
 num = len(text)
 list_sample = random.sample(range(num), num_t)
 total_num = []
