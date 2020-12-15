@@ -11,6 +11,8 @@ import time
 import selenium
 import twitter
 import credentials
+import pandas as pd
+import numpy as np
 
 
 def tweet_scr(key, since, until, out):
@@ -22,34 +24,44 @@ def tweet_scr(key, since, until, out):
     :param out: str
     :return: str
     """
+    def attr_adding(fileName, keyword): #this function is to add a column of the used keyword to the raw output
+        data = pd.read_csv(fileName)
+        data_tmp = [keyword]*len(data)
+        data['Keyword_Set'] = data_tmp
+        data.to_csv(fileName)
     c = twint.Config()
-    # c.Search = "from:" + name
+    c.Search = "from:" + 'CoxHelp'
     # c.User_full = True
     c.Lang = 'en'
     c.Profile_full = True
-    c.Search = key
+    # c.Search = key
     c.Since = since
     c.Until = until
-    c.Output = out + key + ' ' + since + '.txt'
+    c.Store_csv = True
+    file_name = out + key + ' ' + since + '.csv'
+    c.Output = file_name
+    # c.Output = "none"
     twint.run.Search(c)
-
+    attr_adding(file_name, key)
     return 'Your data is in' + ' ' + out
 
 
+# a = ['no', 'knocked', 'down', 'out']
+# b = ['internet', 'service', 'network']
+# # isp = ['Comcast', 'Xfinity', 'Verizon', 'Fios', 'Spectrum', 'TWC', 'Cox', 'AT&T', 'DIRECTV']
+# isp = ['ATT']
+# for i in a:
+#     for j in b:
+#         for k in isp:
+#             key = i + ' ' + j + ' ' + k
+#             # print(key)
+#             tweet_scr(key, '2019-01-01 00:00:00', '2020-08-31 23:59:59','/Users/xiaoan/Desktop/network/nlp_project/data/')
 
-a = ['no', 'knocked', 'down', 'out']
-b = ['internet', 'service', 'network']
-isp = ['Comcast', 'Xfinity', 'Verizon', 'Fios', 'Spectrum', 'TWC', 'Cox', 'AT&T', 'DIRECTV']
-for i in a:
-    for j in b:
-        for k in isp:
-            key = i + ' ' + j + ' ' + k
-            tweet_scr(key, '2019-01-01 00:00:00', '2020-08-31 23:59:59',
-                      '/Users/xiaoan/Desktop/network/nlp_project/data/')
+# tweet_scr('outage ATT', '2020-08-01 00:00:00', '2020-08-31 23:59:59','/Users/xiaoan/Desktop')
 
 
-# tweet_scr('outage CenturyLink', '2019-01-01 00:00:00','2020-08-30 23:59:59', '/Users/xiaoan/Desktop/network/nlp_project/data/')
-# tweet_scr('Cox', 'outage Cox', '2019-01-01 00:00:00','2019-11-01 03:55:04', '/Users/xiaoan/Desktop/network/nlp_project/data/')
+# tweet_scr('outage Comcast', '2020-09-01 00:00:00','2020-09-30 23:59:59', '/Users/xiaoan/Desktop/network/nlp_project/data/')
+tweet_scr('Cox official', '2020-08-22 00:00:00','2020-8-31 03:55:04', '/Users/xiaoan/Desktop/network/nlp_project/data/')
 
 def reddit_scr(keyword):
     '''
@@ -140,7 +152,6 @@ def forum_scr(url):
     file.write(text)
     # file.write('\n')
     return text
-
 
 # num = 1
 # while num < 3:
