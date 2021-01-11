@@ -1,3 +1,5 @@
+# This file contains lists/dictionaries that will be used in data extracting, like US state name as well as their
+# abbreviations and their capital names. You can add more stuff in this file which would be helpful to your cases.
 capital_dic = {
     'Alabama': 'Montgomery',
     'Alaska': 'Juneau',
@@ -102,14 +104,3 @@ stop_words = ['i', 'im', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves',
               "shouldn't", 'wasn', "wasn't", 'weren', "weren't", 'won', "won't", 'wouldn', "wouldn't", '']
 directions = ['North', 'South', 'East', 'West', 'Northwest', 'Northeast', 'Southwest', 'Southeast', 'N', 'S', 'W', 'E',
               'NE', 'NW', 'SW', 'SE']
-# file = open("new.txt", 'r')
-# text = file.read()
-# text = text.split('\n')
-# list_all = {}
-# for i in text:
-#     tmp = i.split('\t')
-#     print(tmp)
-#     if len(tmp) > 2:
-#         list_all[tmp[0]] = tmp[2]
-#         list_all[tmp[1]] = tmp[2]
-# print(list_all)
