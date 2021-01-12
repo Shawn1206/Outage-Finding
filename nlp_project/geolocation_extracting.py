@@ -1,4 +1,4 @@
-# this file is used for extracting location names from the raw scrapped dataset
+# this script is used for extracting location names from the raw scrapped dataset
 import en_core_web_sm
 import csv
 from collections import defaultdict
