@@ -1,48 +1,48 @@
+# this script is used for fetching data and form a file from different social media
 import twint
-import facebook_scraper
 import psaw
 import datetime as dt
 import csv
 from bs4 import BeautifulSoup
 from bs4.element import Comment
 import urllib.request
-import sys
 import time
-import selenium
-import twitter
 import credentials
 import pandas as pd
-import numpy as np
 
 
 def tweet_scr(key, since, until, out):
     """
-
-    :param until:
-    :param key: str "Internet outage"
-    :param since: str '2020-07-20 00:00:00'
-    :param out: str
+    this function is dedicated to scrap Twitter data using Twint
+    :param key: str, keyword using for searching
+    :param since: str, start time of wanted data
+    :param until: str, end time of wanted data
+    :param out: str, output directory
     :return: str
     """
-    def attr_adding(fileName, keyword): #this function is to add a column of the used keyword to the raw output
+
+    # this function is to add a column of the used keyword to the raw output
+    # And you can change the input or even tweak the code to fit your need of adding other columns to your data
+    def attr_adding(fileName, keyword, new_column_name):
         data = pd.read_csv(fileName)
-        data_tmp = [keyword]*len(data)
-        data['Keyword_Set'] = data_tmp
+        data_tmp = [keyword] * len(data)
+        data[new_column_name] = data_tmp
         data.to_csv(fileName)
+
     c = twint.Config()
-    c.Search = "from:" + 'CoxHelp'
+    c.Search = "from:" + key  # when searching within certain account use "from:" + id
     # c.User_full = True
     c.Lang = 'en'
     c.Profile_full = True
-    # c.Search = key
+    # c.Search = key  # normal searching using key as keyword
     c.Since = since
     c.Until = until
-    c.Store_csv = True
+    c.Store_csv = True  # set output format to be csv
     file_name = out + key + ' ' + since + '.csv'
     c.Output = file_name
     # c.Output = "none"
     twint.run.Search(c)
-    attr_adding(file_name, key)
+    attr_adding(file_name, key, 'Keyword_set')
     return 'Your data is in' + ' ' + out
 
 
@@ -57,36 +57,38 @@ def tweet_scr(key, since, until, out):
 #             # print(key)
 #             tweet_scr(key, '2019-01-01 00:00:00', '2020-08-31 23:59:59','/Users/xiaoan/Desktop/network/nlp_project/data/')
 
-# tweet_scr('outage ATT', '2020-08-01 00:00:00', '2020-08-31 23:59:59','/Users/xiaoan/Desktop')
+tweet_scr('CoxHelp', '2020-08-22 00:00:00', '2020-8-31 03:55:04',
+          '/Users/xiaoan/Desktop/network/nlp_project/data/')
 
-
-# tweet_scr('outage Comcast', '2020-09-01 00:00:00','2020-09-30 23:59:59', '/Users/xiaoan/Desktop/network/nlp_project/data/')
-tweet_scr('Cox official', '2020-08-22 00:00:00','2020-8-31 03:55:04', '/Users/xiaoan/Desktop/network/nlp_project/data/')
 
 def reddit_scr(keyword):
     '''
-
-    :param keyword: search work
-    :return:
+    this function is dedicated to scrap reddit data using psaw
+    :param keyword: str, keyword used for searching
+    :return: str
     '''
+    # use psaw's API
     api = psaw.PushshiftAPI()
     start_time = int(dt.datetime(2020, 1, 1).timestamp())
     output_raw = list(api.search_submissions(after=start_time, q=keyword, limit=100000000))
     # output = api.search_comments(after=start_time, q=keyword, limit=1)
     output = []
-    curr = []
+    curr = []  # this list is used for holding an entry before putting it into the final csv file
     for obj in output_raw:
         if obj.subreddit == 'Comcast_Xfinity':
+            # convert the timestamp to a more convenient format
             t = time.localtime(int(obj.created_utc))
             t2 = time.strftime("%Y-%m-%d %H:%M:%S", t)
             tf = dt.datetime.strptime(t2, "%Y-%m-%d %H:%M:%S")
+            # combine the attributes to form an entry
             curr.append(tf)
             curr.append(obj.subreddit)
             curr.append(obj.title)
             curr.append(obj.selftext)
+            # append the entry into output
             output.append(curr)
             curr = []
-
+    # form the csv file
     file = open('reddit_data4.csv', 'a+', newline='')
     with file:
         write = csv.writer(file)
@@ -97,34 +99,19 @@ def reddit_scr(keyword):
 # result = reddit_scr('outage')
 
 
-def facebook_scr(group_id, credential):
-    '''
-
-    :param group_id: first click into the group and the id is the last part of its url
-    :param credential:tuple of user and password to login before requesting the posts
-    :return: generator object
-    '''
-    data = facebook_scraper.get_posts(group=group_id, credentials=credential)
-    return data
-
-
-# data = facebook_scr('434568226894938', ('121472974@qq.com', 'Peter0316'))
-# for i in data:
-#     print(i)
-#     break
-# output = []
-# for i in result:
-#     output.append(i)
-# print(output)
-
 def forum_scr(url):
+    """
+    this function is used for scrapping data from Xfinity's official forum 
+    https://forums.xfinity.com/t5/forums/searchpage/tab/message?q=outage&sort_by=-topicPostDate&collapse_discussion=true
+    :param url: str, input the url of the forum
+    :return: None
+    """
     request = urllib.request.Request(url)
     response = urllib.request.urlopen(request, timeout=20)
-    html = response.read()
+    html = response.read()  # fetch html file
 
     def tagVisible(element):
         '''
-
         Input: an element which is a child of the whole html document object -> str
         Output: if it contain plain text that we want -> boolean
         '''
@@ -137,7 +124,6 @@ def forum_scr(url):
 
     def textFromHtml(body):
         '''
-
         Input: a html document that may contain js scripts, css styles and other stuff -> str
         Output: a clean text (<20000 characters) that only contains plain text
         '''
@@ -149,25 +135,15 @@ def forum_scr(url):
 
     text = textFromHtml(html)
     file = open('forum_data.txt', 'a')
-    file.write(text)
+    file.write(text)  # write down the text we found
     # file.write('\n')
-    return text
+    return 
 
-# num = 1
-# while num < 3:
-#     num = str(num)
-#     forum_scr('https://forums.xfinity.com/t5/forums/searchpage/tab/message?q=outage&advanced=true&page='+ num +'&sort_by=-topicPostDate&collapse_discussion=true&search_type=thread&search_page_size=10')
-#     num = int(num)
-#     num += 1
+# the follow code manipulate url to get different pages of the forum
 
-# consumer_key = credentials.consumer_key
-# consumer_secret = credentials.consumer_secret
-# access_token = credentials.access_token
-# access_secret = credentials.access_secret
-# api = twitter.Api(consumer_key=consumer_key, consumer_secret=consumer_secret, access_token_key=access_token, \
-#                   access_token_secret=access_secret)
-#
-# tmp = api.GetSearch(term='down service Xfinity', since='2020-08-01', until='2020-08-31', count=100)
-# print(tmp)
-# file = open("new.txt", 'a')
-# file.write(str(tmp))
+num = 1
+while num < 3:
+    num = str(num)
+    forum_scr('https://forums.xfinity.com/t5/forums/searchpage/tab/message?q=outage&advanced=true&page='+ num +'&sort_by=-topicPostDate&collapse_discussion=true&search_type=thread&search_page_size=10')
+    num = int(num)
+    num += 1
