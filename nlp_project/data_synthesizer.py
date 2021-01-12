@@ -1,4 +1,4 @@
-# this file's function is to synthesize the twitter data scrapped using different keyword sets targeting the same ISP
+# this script's function is to synthesize the twitter data scrapped using different keyword sets targeting the same ISP
 # Since the keyword set is in the file name of the output data, we can combine them together easily
 # However, since the format of scrapped data changed from .txt to .csv/.tsv, the following function may need some change
 
