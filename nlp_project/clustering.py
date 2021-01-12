@@ -1,16 +1,15 @@
+# this script is used for clustering and time series analysis, then generate plots
 import csv
 import datetime
 import json
 import random
 import re
 from collections import defaultdict
-
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import googlemaps
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 from geonamescache import GeonamesCache
 from haversine import haversine
 from sklearn.cluster import DBSCAN
@@ -19,10 +18,6 @@ from constant import state_dict, state_list, capital_dic, directions
 from credentials import google_key
 
 
-# lyon = (45.7597, 4.8422)
-# paris = (48.8567, 2.3508)
-#
-# output = haversine(lyon, paris)
 def G_helper(name):
     """
     this function is utilizing Google map API for getting coordinates of certain city
@@ -129,99 +124,8 @@ def time_series(name_type, time_slot, gran):
 # ISP_lst = [('Verizon.txt', 't'), ('Spectrum.txt', 't'), ('Cox.txt', 't'), ('AT&T.txt', 't'), ('Comcast.txt', 't')]
 # ISP_lst =[('Full_data_Spectrum.txt','t')]
 # time_series(ISP_lst, ('2019-01-01', '2019-04-30'), 'month')
-def geo_match2(location_names):
-    def data_preprocess(data):
-        data_formal = {}
-        for i in data:
-            time = datetime.datetime.strptime(i[:19], "%Y-%m-%dT%H:%M:%S")
-            # the pattern of timestamp could vary for different data source
-            data_formal[str(time)] = [j[0] for j in data[i][0]]
-        return data_formal
-
-    location_names = data_preprocess(location_names)
-    output = {}
-    bad_items = []
-    gc = GeonamesCache()
-    state_dic_abbr = gc.get_us_states()
-    new_data = {'DC': [38.895, -77.0366667], 'St. Paul': [44.9537, -93.0900], 'Temcula': [33.4936, -117.1484]}
-    with open("city_loca.json", 'r') as f2:
-        for line in f2:
-            datum = json.loads(line)
-            if datum['CityNameAccented'] not in new_data:
-                new_data[datum['CityNameAccented']] = [datum['Latitude'], datum['Longitude']]
-    print(new_data['Temcula'])
-    for i in location_names:
-        s = len(output)
-        for name in location_names[i]:
-            if name:
-                new = name.split(' ')
-            else:
-                new = []
-            name = ''
-            for j in range(len(new)):
-                if new[j] and new[j] != ' ':
-                    new[j] = new[j][0].upper() + new[j][1:]
-                name += new[j]
-                if j != len(new) - 1:
-                    name += ' '
-            # print(name)
-
-            if name in new_data:
-                output[i] = new_data[name]
-                break
-            if name.split(' ')[-1] in state_list:  # deal with situation like "New York NY"
-                separator = ' '
-                name_city = separator.join(name.split(' ')[:-1])
-                if name_city in new_data:
-                    output[i] = new_data[name_city]
-                    break
-            if name.split(' ')[0] in directions:
-                separator = ' '
-                name_city = separator.join(name.split(' ')[1:])
-                if name_city in new_data:
-                    output[i] = new_data[name_city]
-                    break
-                else:
-                    continue
-        if i not in output:
-            full_state_name = ''
-            for name in location_names[i]:
-                if name:
-                    new = name.split(' ')
-                else:
-                    new = []
-                name = ''
-                for j in range(len(new)):
-                    if new[j] and new[j] != ' ':
-                        new[j] = new[j][0].upper() + new[j][1:]
-                    name += new[j]
-                    if j != len(new) - 1:
-                        name += ' '
-                if name in state_dic_abbr:
-                    full_state_name = state_dic_abbr[name]['name']
-                else:
-                    if name in capital_dic:
-                        full_state_name = name
-                if full_state_name:
-                    tmp0 = capital_dic[full_state_name]
-                    try:
-                        output[i] = new_data[tmp0]
-                        break
-                    except:
-                        continue
-        e = len(output)
-        if s == e:
-            bad_items.append((i, location_names[i]))
-    print(bad_items)
-    # with open('coordinates_IstheServicedown_' + 'Verizon' + '.json', 'w') as outfile:
-    #     json.dump(output, outfile)
-    return output
 
 
-f = open('loca_IstheServiceDown_verizon.json')
-data = json.load(f)
-print(len(data))
-print(len(geo_match2(data)))
 
 
 def clustering(ISP_lst):
@@ -255,40 +159,40 @@ def clustering(ISP_lst):
             # print(output)
             return output
 
-        # def geo_match2(location_names):
-        #     output = {}
-        #     gc = GeonamesCache()
-        #     state_dic_abbr = gc.get_us_states()
-        #     new_data = {'DC': [38.895, -77.0366667], 'St. Paul': [44.9537, -93.0900]}
-        #     with open("city_loca.json", 'r') as f2:
-        #         for line in f2:
-        #             datum = json.loads(line)
-        #             if datum['CityNameAccented'] not in new_data:
-        #                 new_data[datum['CityNameAccented']] = [datum['Latitude'], datum['Longitude']]
-        #     for i in location_names:
-        #         for name in location_names[i]:
-        #             if name in new_data:
-        #                 output[i] = new_data[name]
-        #                 break
-        #             else:
-        #                 continue
-        #         if i not in new_data:
-        #             full_state_name = ''
-        #             for name in location_names[i]:
-        #                 if name in state_dic_abbr:
-        #                     full_state_name = state_dic_abbr[name]['name']
-        #                 else:
-        #                     if name in capital_dic:
-        #                         full_state_name = name
-        #                 if full_state_name:
-        #                     tmp0 = capital_dic[full_state_name]
-        #                     try:
-        #                         output[i] = new_data[tmp0]
-        #                         break
-        #                     except:
-        #                         continue
-        #     # print(output)
-        #     return output
+        def geo_match2(location_names):
+            output = {}
+            gc = GeonamesCache()
+            state_dic_abbr = gc.get_us_states()
+            new_data = {'DC': [38.895, -77.0366667], 'St. Paul': [44.9537, -93.0900]}
+            with open("city_loca.json", 'r') as f2:
+                for line in f2:
+                    datum = json.loads(line)
+                    if datum['CityNameAccented'] not in new_data:
+                        new_data[datum['CityNameAccented']] = [datum['Latitude'], datum['Longitude']]
+            for i in location_names:
+                for name in location_names[i]:
+                    if name in new_data:
+                        output[i] = new_data[name]
+                        break
+                    else:
+                        continue
+                if i not in new_data:
+                    full_state_name = ''
+                    for name in location_names[i]:
+                        if name in state_dic_abbr:
+                            full_state_name = state_dic_abbr[name]['name']
+                        else:
+                            if name in capital_dic:
+                                full_state_name = name
+                        if full_state_name:
+                            tmp0 = capital_dic[full_state_name]
+                            try:
+                                output[i] = new_data[tmp0]
+                                break
+                            except:
+                                continue
+            # print(output)
+            return output
 
         def clutering_time(data, time_gap):
             X = np.array(data)
