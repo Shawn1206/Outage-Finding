@@ -1,4 +1,4 @@
-# This file is for evaluating how effective the NLP algorithm is when tagging the location name by checking the
+# This script is for evaluating how effective the NLP algorithm is when tagging the location name by checking the
 # precision and recall of a randomly generated sample. I wrote this program to make manually checking data easier on
 # the terminal and you can manipulate it at will to fulfill your need.
 import random
