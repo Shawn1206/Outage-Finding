@@ -1,4 +1,4 @@
-# this file is for generating word map of certain text dataset, you can use
+# this script is for generating word map of certain text dataset, you can use
 # the output to extract some feature of your dataset
 import json
 from collections import defaultdict
