@@ -1,10 +1,8 @@
+# this file is used for extracting location names from the raw scrapped dataset
 import en_core_web_sm
-import spacy
 import csv
 from collections import defaultdict
 import re
-import geonamescache
-import matplotlib.pyplot as plt
 import credentials
 import twitter
 import json
@@ -12,10 +10,18 @@ from uszipcode import SearchEngine
 
 
 def token_ex(clean_text):
-    def markercleaner(string):
-        pass
-
+    """
+    This is the core function of this file, it takes text as input and return with the latent location names
+    :param clean_text: str
+    :return: list of wanted tuples, each tuple is (str, 'GPE')
+    """
     def casehelper(string):
+        """
+        This is a helper function to compulsively capitalize every initial letter among the words of the input string.
+        To make it easier for the NLP algorithm to recognize location names
+        :param string: str
+        :return: str
+        """
         new = string.split(' ')
         output = ''
         for i in range(len(new)):
@@ -26,21 +32,26 @@ def token_ex(clean_text):
                 output += ' '
         return output
 
+    # clean the input text, and only keeps tokens which only consist of numbers and alphabets
     tokens = clean_text.split(' ')
     clean_text = ''
     for token in tokens:
         new_token = ''.join(e for e in token if e.isalnum())
         clean_text += new_token + ' '
+
+    # Using NLP API
     nlp = en_core_web_sm.load()
     doc = nlp(clean_text)
     output = []
     for X in doc.ents:
+        # print((X.text, X.label_))
         if X.label_ == 'GPE':
             output.append((X.text, X.label_))
-    # if not output:
+
     words = clean_text.split(' ')
     for word in words:
         word = ''.join(e for e in word if e.isalnum())
+        # this is how we find zipcodes and convert them to actual locations then add them in the output
         if word.isdigit() and len(word) == 5:
             search = SearchEngine(simple_zipcode=True)
             zipcode = search.by_zipcode(word)
@@ -50,10 +61,20 @@ def token_ex(clean_text):
     return output
 
 
-# print(token_ex('1237270689087803392 2020-03-10 02:54:54 EDT <amyl_olsen> @Ask_Spectrum is there an outage in 96544?'))
+# print(token_ex("My Spectrum has been on the blink all morning and now it is totally out. Anyone else in 76114 area having same problem"))
 
 def twitter_sp(name):
+    """
+    This function is dedicated to extract location names from Twitter data
+    :param name: str, filename
+    :return: None
+    """
     def twitter_profile(user):
+        """
+        This function fetch the the Twitter user's profiles for the location in them
+        :param user: str, user name
+        :return: str, user location
+        """
         consumer_key = credentials.consumer_key
         consumer_secret = credentials.consumer_secret
         access_token = credentials.access_token
@@ -74,7 +95,7 @@ def twitter_sp(name):
     text = text.split('\n')[:-1]
     # print(len(set(text)))
     output = defaultdict(list)
-    p1 = re.compile(r'[<](.*?)[>]')
+    p1 = re.compile(r'[<](.*?)[>]')  # pattern for getting the user name in the text
     for tweet in text:
         # username = re.findall(p1, tweet)[0]
         geo_stat = ''
@@ -98,24 +119,44 @@ def twitter_sp(name):
 # twitter_sp('New_data_Cox.txt')
 
 def disqus(name_list):
+    """
+    This function is dedicated to extract location names from disqus data
+    :param name_list: list, list of filenames
+    :return: None
+    """
     output = defaultdict(list)
+    count = 0
     for name in name_list:
-        with open(name, newline='') as tsvfile:
+        with open(name, newline='') as tsvfile:  # the typical way of reading a tsv/csv file
             reader = csv.reader(tsvfile, delimiter='\t')
             for row in reader:
+                count += 1
+                # locate the data column you want
                 time = row[1]
                 txt = row[-1]
-                output[time].append(token_ex(txt))
-    with open('loca_Isservicedown_real.json', 'w') as outfile:
+                if token_ex(txt):  # if any location name is found by our token_ex() function append it
+                    output[time].append(token_ex(txt))
+    with open('loca_istheServiceDown_' + name_list[0][41:-4] + '.json', 'w') as outfile:
         json.dump(output, outfile)
+    # print(count)
 
-disqus(['./istheservicedown_Data/1577664000.tsv', './istheservicedown_Data/1585194861.tsv','./istheservicedown_Data/1591132970.tsv','./istheservicedown_Data/1596830230.tsv','./istheservicedown_Data/1603532104.tsv'])
+#
+# disqus(['./istheservicedown_Data/istheservicedown_cox.tsv'])
+# disqus(['./istheservicedown_Data/istheservicedown_comcast.tsv'])
+# disqus(['./istheservicedown_Data/istheservicedown_spectrum.tsv'])
+# disqus(['./istheservicedown_Data/istheservicedown_verizon.tsv'])
 
 def reddit_sp(name):
+    """
+    This function is dedicated to extract location names from reddit data
+    :param name:str, filename
+    :return: dict, {time: location}
+    """
     output = defaultdict(list)
     with open(name, newline='') as csvfile:
-        reader = csv.reader(csvfile, delimiter=',')
+        reader = csv.reader(csvfile, delimiter=',')  # the typical way of reading a tsv/csv file
         for row in reader:
+            # locate the data column you want
             time = row[0]
             subre = row[1]
             txt = row[2] + ' ' + row[3]
@@ -128,9 +169,16 @@ def reddit_sp(name):
 # reddit_sp('reddit_data4.csv')
 
 def forum_sp(name):
+    """
+    This function is dedicated to extract location names from Xfinity's official forum data
+    :param name: str, filename
+    :return: dict, {time: location}
+    """
     output = defaultdict(list)
     tmp = open(name, 'r')
     text = tmp.read()
+    # the following method is based on what I observed from the raw text data
+    # So this might not very helpful on other forum with different webpage setting
     pages = text.split('Best Match')
     num = 0
     for page in pages:
@@ -141,7 +189,8 @@ def forum_sp(name):
             time1 = re.search(r"[0-9][0-9]:[0-9][0-9]", post)
             time2 = re.search(r"[A-Z]M", post)
             if time2 and time1 and date:
-                time_f = date.group() + ' ' + time1.group() + ' ' + time2.group()
+                time_f = date.group() + ' ' + time1.group() + ' ' + time2.group()  # combine all time elements to
+                # make a full timestamp
                 res = token_ex(post)
                 if res:
                     output[time_f].append(token_ex(post))
@@ -152,53 +201,21 @@ def forum_sp(name):
 
 # forum_sp('Xfinity_forum_data0.1.txt')
 
-# def location_filter(dict0):
-#     empty = []
-#
+def mailing_list(archive_list):
+    """
+    This function is dedicated to extract location names from mailing list archive
+    :param archive_list: list, names of archive
+    :return: dict, {time: location}
+    """
+    output = defaultdict(list)
+    for archive in archive_list:
+        tmp = open(archive, 'r')
+        text = tmp.read()
+        posts = text.split('\nFrom ')
+        for post in posts:
+            if 'CenturyLink' in posts[1]:
+                pass
 
 
-#
-#     gc = geonamescache.GeonamesCache()
-#     county = {}
-#     for coun in gc.get_us_counties():
-#         county[coun['name']] = coun
-#     for time in dict0.keys():
-#         tmp = []
-#         for post in dict0[time]:
-#             tmp2 = []
-#             for tuple in post:
-#                 # if not tuple[0][0].isupper():
-#                 #     tmp3 = casehelper(tuple[0])
-#                 # else:
-#                 #     tmp3 = tuple[0]
-#                 tmp3 = casehelper(tuple[0])
-#                 if tmp3 not in county and tmp3 not in gc.get_us_states_by_names() and \
-#                         tmp3 not in gc.get_us_states() and gc.get_cities_by_name(tmp3) == []:
-#                     print(tmp3)
-#                     continue
-#                 else:
-#                     tmp2.append(tmp3)
-#             tmp.append(tmp2)
-#         if tmp[0]:
-#             dict0[time] = tmp
-#         else:
-#             empty.append(time)
-#     for key in empty:
-#         dict0.pop(key)
-#     return dict0
-
-
-def name_to_number(name):
     pass
-
-# gc = geonamescache.GeonamesCache()
-# raw = gc.get_cities()
-# raw2 = raw.copy()
-# for i in raw:
-#     if raw[i]['countrycode'] != 'US':
-#         raw2.pop(i)
-#
-# print(len(raw2))
-
-# print(len(dict0))
-# print(location_filter(dict0))
+# mailing_list(['./Outage_Archives/2020-November.txt'])
