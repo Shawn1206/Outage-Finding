@@ -1,4 +1,4 @@
-# this script is used for extracting location names from the raw scrapped dataset
+# this file is used for extracting location names from the raw scrapped dataset
 import en_core_web_sm
 import csv
 from collections import defaultdict
@@ -15,6 +15,7 @@ def token_ex(clean_text):
     :param clean_text: str
     :return: list of wanted tuples, each tuple is (str, 'GPE')
     """
+
     def casehelper(string):
         """
         This is a helper function to compulsively capitalize every initial letter among the words of the input string.
@@ -65,10 +66,11 @@ def token_ex(clean_text):
 
 def twitter_sp(name):
     """
-    This function is dedicated to extract location names from Twitter data
+    This function is dedicated to extract location names from Twitter data(.txt file)
     :param name: str, filename
     :return: None
     """
+
     def twitter_profile(user):
         """
         This function fetch the the Twitter user's profiles for the location in them
@@ -117,6 +119,27 @@ def twitter_sp(name):
 # twitter_sp('New_data_Verizon.txt')
 # twitter_sp('New_data_Comcast.txt')
 # twitter_sp('New_data_Cox.txt')
+def twitter_sp_csv(name):
+    """
+    This function is dedicated to extract location names from Twitter data(.csv files)
+    :param name: str, filename
+    :return: None
+    """
+    output = defaultdict(list)
+    with open(name, newline='') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',')
+        for row in reader:
+            time = row[3]
+            msg = row[11]
+            res = token_ex(msg)
+            if res:
+                output[time].append(res)
+    with open('loca_' + name + '.json', 'w') as outfile:
+        json.dump(output, outfile)
+
+
+# twitter_sp_csv('test.csv')
+
 
 def disqus(name_list):
     """
@@ -139,6 +162,7 @@ def disqus(name_list):
     with open('loca_istheServiceDown_' + name_list[0][41:-4] + '.json', 'w') as outfile:
         json.dump(output, outfile)
     # print(count)
+
 
 #
 # disqus(['./istheservicedown_Data/istheservicedown_cox.tsv'])
@@ -215,7 +239,6 @@ def mailing_list(archive_list):
         for post in posts:
             if 'CenturyLink' in posts[1]:
                 pass
-
 
     pass
 # mailing_list(['./Outage_Archives/2020-November.txt'])
