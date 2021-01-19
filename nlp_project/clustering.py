@@ -1,4 +1,4 @@
-# this script is used for clustering and time series analysis, then generate plots
+# this script is used for clustering and time series analysis, and then generating plots
 import csv
 import datetime
 import json
@@ -18,13 +18,13 @@ from constant import state_dict, state_list, capital_dic, directions
 from credentials import google_key
 
 
-def G_helper(name):
+def G_helper(name):  # this function is temporarily not used
     """
     this function is utilizing Google map API for getting coordinates of certain city
     :param name: city name, str
     :return: coordinates, tuple
     """
-    gmaps = googlemaps.Client(key=google_key)
+    gmaps = googlemaps.Client(key=google_key)  # the key is imported from credentials.py
 
     geocode_result = gmaps.geocode(name)
     return geocode_result
@@ -33,15 +33,21 @@ def G_helper(name):
 def time_series(name_type, time_slot, gran):
     '''
     This is time_series generating function for getting statistics of raw data
-    :param name_type: [('Comcast.txt','t')]
+    :param name_type: [('Comcast.txt','t_csv')], list of tuples, for each tuple it contains the file name and data source
+    't' = Twitter_txt, 't_csv' = Twitter_csv, 'r' = Reddit, 'f' = forum
     :param time_slot: ('2020-08-01','2020-09-01')
     :param gran: 'week','day','month'
     :return:
     '''
     s, e = datetime.datetime.strptime(time_slot[0], "%Y-%m-%d"), datetime.datetime.strptime(
-        time_slot[1], "%Y-%m-%d")
+        time_slot[1], "%Y-%m-%d")  # set the start date and end date first
 
     def counter(name_type):
+        """
+        this function is for counting the number of raw data entries according to their date
+        :param name_type: 't' = Twitter_txt, 't_csv' = Twitter_csv, 'r' = Reddit, 'f' = forum
+        :return: dict, time flow
+        """
         check = []
         time_flow = defaultdict(int)
         name = name_type[0]
@@ -51,6 +57,15 @@ def time_series(name_type, time_slot, gran):
                 reader = csv.reader(csvfile, delimiter=',')
                 for row in reader:
                     time = row[0][:7]
+                    date_time = datetime.datetime.strptime(time, "%Y-%m-%d")  # change datatype of date
+                    if s <= date_time <= e:
+                        tmp = granset(time, gran)  # set the time granularity
+                        time_flow[tmp] += 1
+        if type == 't_csv':
+            with open(name, newline='') as csvfile:
+                reader = csv.reader(csvfile, delimiter=',')
+                for row in reader:
+                    time = row[3][:7]
                     date_time = datetime.datetime.strptime(time, "%Y-%m-%d")
                     if s <= date_time <= e:
                         tmp = granset(time, gran)
@@ -62,24 +77,24 @@ def time_series(name_type, time_slot, gran):
                 text = text.split('\n')[:-1]
                 for tweet in text:
                     id = tweet[:19]
-                    if id in check:
+                    if id in check:  # check if this entry has been examined
                         continue
                     else:
                         check.append(id)
-                    time = tweet[20:30]
+                    time = tweet[20:30]  # locate the time
                     try:
                         date_time = datetime.datetime.strptime(time, "%Y-%m-%d")
                     except:
                         continue
                     if s <= date_time <= e:
-                        tmp = granset(time, gran)
+                        tmp = granset(time, gran)  # set the granularity
                         time_flow[tmp] += 1
             elif type == 'f':
                 pages = text.split('Best Match')
                 for page in pages:
                     posts = page.split(' ' * 33)
                     for post in posts:
-                        date = re.search(r"[0-1][0-9]-[0-2][0-9]-20[0-9][0-9]", post)
+                        date = re.search(r"[0-1][0-9]-[0-2][0-9]-20[0-9][0-9]", post)  # locate the date
                         if date:
                             time = date.group()[:2]
                             date_time = datetime.datetime.strptime(time, "%m-%d-%Y")
@@ -90,6 +105,12 @@ def time_series(name_type, time_slot, gran):
         return time_flow
 
     def granset(time, gran):
+        """
+        set the granularity
+        :param time: str, whole timestamp
+        :param gran: str, granularity, 'month' or 'day'
+        :return: str, sliced timestamp
+        """
         if gran == 'month':
             return time[:7]
         elif gran == 'week':
@@ -97,7 +118,8 @@ def time_series(name_type, time_slot, gran):
         else:
             return time
 
-    color = 'bygrm'
+    # make the time series plot
+    color = 'bygrm'  # hardcode the colors that would be used
     n = 0
     tmp = [0] * 61
     tmp2 = []
@@ -122,26 +144,34 @@ def time_series(name_type, time_slot, gran):
 
 
 # ISP_lst = [('Verizon.txt', 't'), ('Spectrum.txt', 't'), ('Cox.txt', 't'), ('AT&T.txt', 't'), ('Comcast.txt', 't')]
-# ISP_lst =[('Full_data_Spectrum.txt','t')]
 # time_series(ISP_lst, ('2019-01-01', '2019-04-30'), 'month')
 
 
-
-
 def clustering(ISP_lst):
+    """
+    this function is for clustering data extracted from raw data via different methods and make plots
+    :param ISP_lst: list of tuples
+    :return: None
+    """
     global uni
 
     def time_location_clustering(isp_name, time_slot, time_gap, distance):
         '''
         This function returns clustered groups
-        :param isp_name:
-        :param time_slot:
-        :param time_gap:
-        :param distance:
-        :return:
+        sample input: ('loca_Verizon.json', ('2020-03-31', '2020-04-01'), 1, 500)
+        :param isp_name: str, file name of extracted data
+        :param time_slot: tuple, start and end date
+        :param time_gap: int, the length of gap which determine the clustering
+        :param distance: int, the distance which determine the clustering
+        :return: None
         '''
 
         def data_preprocess(data):
+            """
+            this function is for unify the format of the timestamp
+            :param data: dict
+            :return: dict
+            """
             data_formal = {}
             for i in data:
                 time = datetime.datetime.strptime(i[:19], "%Y-%m-%d %H:%M:%S")
@@ -150,6 +180,13 @@ def clustering(ISP_lst):
             return data_formal
 
         def data_slice(data, start, end):
+            """
+            this function is for slice the data at will
+            :param data: dict
+            :param start: datetime, start time
+            :param end: datetime, end time
+            :return:
+            """
             output = {}
             for i in data:
                 if start <= i <= end:
@@ -160,6 +197,12 @@ def clustering(ISP_lst):
             return output
 
         def geo_match2(location_names):
+            """
+            This function match US city names with corresponding coordinates, basically the same as
+            coordinates_converting.py, check it for comments and description
+            :param location_names: str, content of input file
+            :return: str
+            """
             output = {}
             gc = GeonamesCache()
             state_dic_abbr = gc.get_us_states()
@@ -195,32 +238,49 @@ def clustering(ISP_lst):
             return output
 
         def clutering_time(data, time_gap):
+            """
+            this is an unfinished function dedicated to clustering data according to time
+            :param data:
+            :param time_gap:
+            :return:
+            """
             X = np.array(data)
             clustering = DBSCAN(eps=time_gap * 3600, min_samples=1).fit(X)
             labels = clustering.labels_
             pass
 
         def clustering_geo(data, distance):
+            """
+            this function is for clustering data according to their geolocation
+            :param data: dict
+            :param distance: int
+            :return: dict, clustered groups
+            """
             def center_g(member_list):
+                """
+                calculate the center(average) coordinate of a group of coordinates
+                :param member_list:
+                :return:
+                """
                 x = sum([i[0] for i in member_list]) / len(member_list)
                 y = sum([j[1] for j in member_list]) / len(member_list)
                 c = (x, y)
                 return c
-
+            # the following lines divide dots into groups
             groups = []
             while data:
                 curr = data.pop()
                 if not groups:
-                    groups.append([curr])
+                    groups.append([curr])  # initiate the algorithm with adding the first dot as the first group
                 else:
                     dist = []
                     for group in groups:
-                        dist.append(haversine(curr, center_g(group)))
+                        dist.append(haversine(curr, center_g(group)))  # calculate the distance between the new dot and the current groups
                     dist = np.array(dist)
-                    if min(dist) <= distance:
+                    if min(dist) <= distance:  # if the requirement is satisfied, find the nearest group and add the dot in
                         groups[np.ndarray.argmin(dist)].append(curr)
                     else:
-                        groups.append([curr])
+                        groups.append([curr])  # if not, it would form a new group itself
             representatives = {}
             for group in groups:
                 representatives[center_g(group)] = len(group)
@@ -230,6 +290,7 @@ def clustering(ISP_lst):
             time_slot[1], "%Y-%m-%d")
         f = open(isp_name)
         data = json.load(f)
+        # preprocess the data
         data_pre = data_preprocess(data)
         data_formal = geo_match2(data_pre)
         data_slice1 = data_slice(data_formal, s, e)
@@ -237,14 +298,16 @@ def clustering(ISP_lst):
         groups = clustering_geo(list(tmp), distance)
         y, x = [i[0] + 0.2 * random.random() for i in groups.keys()], [i[1] + 0.2 * random.random() for i in
                                                                        groups.keys()]
+        # add some random noise to make the points more recognizable
         z = list(groups.values())
         return x, y, z
-
+    # set the plate-carree map for projecting dots on it
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines(resolution='110m')
     ax.set_extent([-130, -60, 17, 50], ccrs.PlateCarree())
     ax.add_feature(cfeature.BORDERS.with_scale('50m'), linestyle=':')
     ax.add_feature(cfeature.STATES.with_scale('50m'), linestyle=':')
+    # drawing dots on the map
     color = 'bygrm'
     for i, j in enumerate(ISP_lst):
         x, y, z = time_location_clustering(j[0], j[1], j[2], j[3])
@@ -266,10 +329,11 @@ def clustering(ISP_lst):
     # plt.savefig(ISP_lst[0][1][1])
     plt.show()
 
+# sample usage of generating a plot
 # uni = []
 # set(uni)
 # pattern = '2020-03-'
-#
+# 
 # for i in range(2, 32):
 #     time = (pattern + str(i - 1), pattern + str(i))
 #     ISP_lst = [('loca_Verizon.json', time, 1, 500),
@@ -278,26 +342,11 @@ def clustering(ISP_lst):
 #                ('loca_AT&T.json', time, 1, 500),
 #                ('loca_Cox.json', time, 1, 500)]
 #     clustering(ISP_lst)
-#
+# 
 # time = ('2020-03-31', '2020-04-01')
 # clustering([('loca_Verizon.json', time, 1, 500),
 #             ('loca_Spectrum.json', time, 1, 500),
 #             ('loca_Comcast.json', time, 1, 500),
 #             ('loca_AT&T.json', time, 1, 500),
 #             ('loca_Cox.json', time, 1, 500)])
-#
-# pattern = '2020-04-'
-# for i in range(2, 31):
-#     time = (pattern + str(i - 1), pattern + str(i))
-#     ISP_lst = [('loca_Verizon.json', time, 1, 500),
-#                ('loca_Spectrum.json', time, 1, 500),
-#                ('loca_Comcast.json', time, 1, 500),
-#                ('loca_AT&T.json', time, 1, 500),
-#                ('loca_Cox.json', time, 1, 500)]
-#     clustering(ISP_lst)
-# time = ('2020-04-30', '2020-05-01')
-# clustering([('loca_Verizon.json', time, 1, 500),
-#             ('loca_Spectrum.json', time, 1, 500),
-#             ('loca_Comcast.json', time, 1, 500),
-#             ('loca_AT&T.json', time, 1, 500),
-#             ('loca_Cox.json', time, 1, 500)])
+
