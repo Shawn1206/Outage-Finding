@@ -62,7 +62,7 @@ def token_ex(clean_text):
     return output
 
 
-# print(token_ex("My Spectrum has been on the blink all morning and now it is totally out. Anyone else in 76114 area having same problem"))
+
 
 def twitter_sp(name):
     """
@@ -113,12 +113,7 @@ def twitter_sp(name):
         json.dump(output, outfile)
 
 
-# twitter_sp('New_data_Re_AT&T.txt')
 
-# twitter_sp('New_data_AT&T.txt')
-# twitter_sp('New_data_Verizon.txt')
-# twitter_sp('New_data_Comcast.txt')
-# twitter_sp('New_data_Cox.txt')
 def twitter_sp_csv(name):
     """
     This function is dedicated to extract location names from Twitter data(.csv files)
@@ -138,7 +133,6 @@ def twitter_sp_csv(name):
         json.dump(output, outfile)
 
 
-# twitter_sp_csv('test.csv')
 
 
 def disqus(name_list):
@@ -164,11 +158,7 @@ def disqus(name_list):
     # print(count)
 
 
-#
-# disqus(['./istheservicedown_Data/istheservicedown_cox.tsv'])
-# disqus(['./istheservicedown_Data/istheservicedown_comcast.tsv'])
-# disqus(['./istheservicedown_Data/istheservicedown_spectrum.tsv'])
-# disqus(['./istheservicedown_Data/istheservicedown_verizon.tsv'])
+
 
 def reddit_sp(name):
     """
@@ -190,7 +180,7 @@ def reddit_sp(name):
     print(output)
 
 
-# reddit_sp('reddit_data4.csv')
+
 
 def forum_sp(name):
     """
@@ -223,7 +213,7 @@ def forum_sp(name):
     print(num)
 
 
-# forum_sp('Xfinity_forum_data0.1.txt')
+
 
 def mailing_list(archive_list):
     """
@@ -241,4 +231,29 @@ def mailing_list(archive_list):
                 pass
 
     pass
-# mailing_list(['./Outage_Archives/2020-November.txt'])
+
+if __name__ == "__main__":
+    # testing geolocation names extracting function
+    print(token_ex("My Spectrum has been on the blink all morning and now it is totally out. Anyone else in 76114 area having same problem"))
+
+    # testing forum data extraction
+    forum_sp('Xfinity_forum_data0.1.txt')
+
+    # testing reddit data extraction
+    reddit_sp('reddit_data4.csv')
+
+    # testing Disqus data extraction
+    disqus(['./istheservicedown_Data/istheservicedown_cox.tsv'])
+    disqus(['./istheservicedown_Data/istheservicedown_comcast.tsv'])
+    disqus(['./istheservicedown_Data/istheservicedown_spectrum.tsv'])
+    disqus(['./istheservicedown_Data/istheservicedown_verizon.tsv'])
+    
+    # testing Twitter csv data extraction
+    twitter_sp_csv('test.csv')
+    
+    # testing Twitter txt data extraction
+    twitter_sp('New_data_Re_AT&T.txt')
+    twitter_sp('New_data_AT&T.txt')
+    twitter_sp('New_data_Verizon.txt')
+    twitter_sp('New_data_Comcast.txt')
+    twitter_sp('New_data_Cox.txt')
