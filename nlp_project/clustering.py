@@ -348,9 +348,3 @@ if __name__ == "__main__":
                    ('loca_Cox.json', time, 1, 500)]
         clustering(ISP_lst)
 
-    time = ('2020-03-31', '2020-04-01')
-    clustering([('loca_Verizon.json', time, 1, 500),
-                ('loca_Spectrum.json', time, 1, 500),
-                ('loca_Comcast.json', time, 1, 500),
-                ('loca_AT&T.json', time, 1, 500),
-                ('loca_Cox.json', time, 1, 500)])
