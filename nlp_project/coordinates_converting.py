@@ -107,7 +107,9 @@ def geo_match2(location_names):
     return 'done'
 
 
-f = open('loca_IstheServiceDown_verizon.json')
-data = json.load(f)
-print(len(data))
-print(len(geo_match2(data)))
+
+if __name__ == '__main__':
+    f = open('loca_IstheServiceDown_verizon.json')
+    data = json.load(f)
+    print(len(data))
+    print(len(geo_match2(data)))
