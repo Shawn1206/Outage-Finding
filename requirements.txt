@@ -1,14 +1,11 @@
-Python 3.5+
-Spacy: https://spacy.io/usage
-Cartopy: https://pypi.org/project/Cartopy/
-Google Maps: https://pypi.org/project/googlemaps/
-Geonamescache: https://pypi.org/project/geonamescache/
-Haversine: https://pypi.org/project/haversine/
-Sklearn: https://pypi.org/project/scikit-learn/
-Twint: https://github.com/twintproject/twint
-Psaw: https://pypi.org/project/psaw/
-Beautifulsoup: https://pypi.org/project/beautifulsoup4/
-Urllib: https://pypi.org/project/urllib3/
-Pandas: https://pypi.org/project/pandas/
-Numpy: https://pypi.org/project/numpy/
-
+Cartopy
+beautifulsoup4
+psaw
+urllib3
+twint
+numpy
+pandas
+sklearn
+googlemaps
+geonamecache
+haversine
