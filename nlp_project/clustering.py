@@ -334,7 +334,7 @@ if __name__ == "__main__":
     ISP_lst = [('Verizon.txt', 't'), ('Spectrum.txt', 't'), ('Cox.txt', 't'), ('AT&T.txt', 't'), ('Comcast.txt', 't')]
     time_series(ISP_lst, ('2019-01-01', '2019-04-30'), 'month')
     
-    # sample usage of generating a plot after clustering all five ISPs' data on March 2020
+    # sample usage of generating a plot after clustering all five ISPs' data on each day of March 2020
     uni = []
     set(uni)
     pattern = '2020-03-'
