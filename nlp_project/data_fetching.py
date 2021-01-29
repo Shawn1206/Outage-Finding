@@ -46,19 +46,9 @@ def tweet_scr(key, since, until, out):
     return 'Your data is in' + ' ' + out
 
 
-# a = ['no', 'knocked', 'down', 'out']
-# b = ['internet', 'service', 'network']
-# # isp = ['Comcast', 'Xfinity', 'Verizon', 'Fios', 'Spectrum', 'TWC', 'Cox', 'AT&T', 'DIRECTV']
-# isp = ['ATT']
-# for i in a:
-#     for j in b:
-#         for k in isp:
-#             key = i + ' ' + j + ' ' + k
-#             # print(key)
-#             tweet_scr(key, '2019-01-01 00:00:00', '2020-08-31 23:59:59','/Users/xiaoan/Desktop/network/nlp_project/data/')
 
-tweet_scr('CoxHelp', '2020-08-22 00:00:00', '2020-8-31 03:55:04',
-          '/Users/xiaoan/Desktop/network/nlp_project/data/')
+
+
 
 
 def reddit_scr(keyword):
@@ -96,12 +86,12 @@ def reddit_scr(keyword):
     return 'Done'
 
 
-# result = reddit_scr('outage')
+
 
 
 def forum_scr(url):
     """
-    this function is used for scrapping data from Xfinity's official forum 
+    this function is used for scrapping data from Xfinity's official forum
     https://forums.xfinity.com/t5/forums/searchpage/tab/message?q=outage&sort_by=-topicPostDate&collapse_discussion=true
     :param url: str, input the url of the forum
     :return: None
@@ -137,13 +127,31 @@ def forum_scr(url):
     file = open('forum_data.txt', 'a')
     file.write(text)  # write down the text we found
     # file.write('\n')
-    return 
+    return
 
-# the follow code manipulate url to get different pages of the forum
 
-num = 1
-while num < 3:
-    num = str(num)
-    forum_scr('https://forums.xfinity.com/t5/forums/searchpage/tab/message?q=outage&advanced=true&page='+ num +'&sort_by=-topicPostDate&collapse_discussion=true&search_type=thread&search_page_size=10')
-    num = int(num)
-    num += 1
+
+if __name__ == "__main__":
+    # the follow code manipulate url to get different pages of the forum
+    num = 1
+    while num < 3:
+        num = str(num)
+        forum_scr('https://forums.xfinity.com/t5/forums/searchpage/tab/message?q=outage&advanced=true&page='+ num +'&sort_by=-topicPostDate&collapse_discussion=true&search_type=thread&search_page_size=10')
+        num = int(num)
+        num += 1
+
+    # the follow line scrapes reddit data searching 'outage' as keywords
+    result = reddit_scr('outage')
+    
+    # the follow code scrapes Twitter data using different keyword combo
+    a = ['no', 'knocked', 'down', 'out']
+    b = ['internet', 'service', 'network']
+    isp = ['Comcast', 'Xfinity', 'Verizon', 'Fios', 'Spectrum', 'TWC', 'Cox', 'AT&T', 'DIRECTV']
+
+    for i in a:
+        for j in b:
+            for k in isp:
+                key = i + ' ' + j + ' ' + k
+                # print(key)
+                tweet_scr(key, '2019-01-01 00:00:00', '2020-08-31 23:59:59','/Users/xiaoan/Desktop/network/nlp_project/data/')
+    
