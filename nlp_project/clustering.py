@@ -143,8 +143,6 @@ def time_series(name_type, time_slot, gran):
     plt.show()
 
 
-# ISP_lst = [('Verizon.txt', 't'), ('Spectrum.txt', 't'), ('Cox.txt', 't'), ('AT&T.txt', 't'), ('Comcast.txt', 't')]
-# time_series(ISP_lst, ('2019-01-01', '2019-04-30'), 'month')
 
 
 def clustering(ISP_lst):
@@ -326,27 +324,33 @@ def clustering(ISP_lst):
     # plt.title(isp_name + ' from ' + time_slot[0] + ' to ' + time_slot[1])
     plt.title('Outage Reports for ISPs' + ' on' + ' March ' + ISP_lst[0][1][0].split('-')[-1] + 'th')
     plt.legend(loc=3)
-    # plt.savefig(ISP_lst[0][1][1])
+    plt.savefig(ISP_lst[0][1][1])
     plt.show()
 
-# sample usage of generating a plot
-# uni = []
-# set(uni)
-# pattern = '2020-03-'
-# 
-# for i in range(2, 32):
-#     time = (pattern + str(i - 1), pattern + str(i))
-#     ISP_lst = [('loca_Verizon.json', time, 1, 500),
-#                ('loca_Spectrum.json', time, 1, 500),
-#                ('loca_Comcast.json', time, 1, 500),
-#                ('loca_AT&T.json', time, 1, 500),
-#                ('loca_Cox.json', time, 1, 500)]
-#     clustering(ISP_lst)
-# 
-# time = ('2020-03-31', '2020-04-01')
-# clustering([('loca_Verizon.json', time, 1, 500),
-#             ('loca_Spectrum.json', time, 1, 500),
-#             ('loca_Comcast.json', time, 1, 500),
-#             ('loca_AT&T.json', time, 1, 500),
-#             ('loca_Cox.json', time, 1, 500)])
 
+
+if __name__ == "__main__":
+    # sample usage of generating a time series plot from the start of Jan 2019 to the end of April 2019
+    ISP_lst = [('Verizon.txt', 't'), ('Spectrum.txt', 't'), ('Cox.txt', 't'), ('AT&T.txt', 't'), ('Comcast.txt', 't')]
+    time_series(ISP_lst, ('2019-01-01', '2019-04-30'), 'month')
+    
+    # sample usage of generating a plot after clustering all five ISPs' data on March 2020
+    uni = []
+    set(uni)
+    pattern = '2020-03-'
+
+    for i in range(2, 32):
+        time = (pattern + str(i - 1), pattern + str(i))
+        ISP_lst = [('loca_Verizon.json', time, 1, 500),
+                   ('loca_Spectrum.json', time, 1, 500),
+                   ('loca_Comcast.json', time, 1, 500),
+                   ('loca_AT&T.json', time, 1, 500),
+                   ('loca_Cox.json', time, 1, 500)]
+        clustering(ISP_lst)
+
+    time = ('2020-03-31', '2020-04-01')
+    clustering([('loca_Verizon.json', time, 1, 500),
+                ('loca_Spectrum.json', time, 1, 500),
+                ('loca_Comcast.json', time, 1, 500),
+                ('loca_AT&T.json', time, 1, 500),
+                ('loca_Cox.json', time, 1, 500)])
