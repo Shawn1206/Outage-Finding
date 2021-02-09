@@ -30,7 +30,7 @@ def geo_match2(location_names):
     bad_items = []
     gc = GeonamesCache()
     state_dic_abbr = gc.get_us_states()
-    new_data = {'DC': [38.895, -77.0366667], 'St. Paul': [44.9537, -93.0900], 'Temcula': [33.4936, -117.1484]}
+    new_data = {'DC': [38.895, -77.0366667], 'St. Paul': [44.9537, -93.0900], 'Temcula': [33.4936, -117.1484]}  # You can manually input some corner cases
     with open("city_loca.json", 'r') as f2:  # load coordinates from data source
         for line in f2:
             datum = json.loads(line)
